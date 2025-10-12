@@ -11,6 +11,10 @@ local supportedGames = {
         name = "Brookhaven RP",
         scriptUrl = "https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/Brookhaven%20RP.lua",
     },
+    {
+        name = "Morph Tower",
+        scriptUrl = "https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/%5BUPDT%5D%20Morph%20Tower.lua",
+    },
 }
 
 local selectedGame = nil
@@ -77,7 +81,7 @@ LoadButton.Text = "Load"
 LoadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 LoadButton.TextSize = 16
 
--- // CRT GM BTN \\ --
+-- Create game buttons
 for i, game in ipairs(supportedGames) do
     local GameButton = Instance.new("TextButton")
     GameButton.Parent = GameList
@@ -98,6 +102,7 @@ for i, game in ipairs(supportedGames) do
     GameButton.MouseButton1Click:Connect(function()
         selectedGame = game
         
+        -- Reset all buttons
         for _, btn in ipairs(GameList:GetChildren()) do
             if btn:IsA("TextButton") then
                 btn.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
@@ -105,15 +110,16 @@ for i, game in ipairs(supportedGames) do
             end
         end
         
+        -- Highlight selected
         GameButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
         GameButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     end)
 end
 
--- // UPDT CVS \\ --
+-- Update canvas size
 GameList.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
 
--- // Buttons \\ --
+-- Load button click
 LoadButton.MouseButton1Click:Connect(function()
     if not selectedGame then
         LoadButton.Text = "Select Game!"
