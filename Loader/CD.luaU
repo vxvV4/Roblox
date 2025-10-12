@@ -20,21 +20,27 @@ local function loadScript(scriptUrl)
         return game:HttpGet(scriptUrl)
     end)
     
-    if success then
-        local func, err = loadstring(scriptContent)
-        if func then
-            func()
-            return true
-        else
-            warn("Load error:", err)
-            return false
-        end
-    else
+    if not success then
         warn("Fetch failed")
         return false
     end
+    
+    local func, loadErr = loadstring(scriptContent)
+    if not func then
+        warn("Load error:", loadErr)
+        return false
+    end
+    
+    local execSuccess, execErr = pcall(func)
+    if not execSuccess then
+        warn("Execution error:", execErr)
+        return false
+    end
+    
+    return true
 end
--- // Gui \\ --
+
+
 local ScreenGui = Instance.new("ScreenGui")
 local Frame = Instance.new("Frame")
 local GameList = Instance.new("ScrollingFrame")
@@ -71,6 +77,7 @@ LoadButton.Text = "Load"
 LoadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 LoadButton.TextSize = 16
 
+-- // CRT GM BTN \\ --
 for i, game in ipairs(supportedGames) do
     local GameButton = Instance.new("TextButton")
     GameButton.Parent = GameList
@@ -91,21 +98,22 @@ for i, game in ipairs(supportedGames) do
     GameButton.MouseButton1Click:Connect(function()
         selectedGame = game
         
-      
         for _, btn in ipairs(GameList:GetChildren()) do
             if btn:IsA("TextButton") then
                 btn.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
                 btn.TextColor3 = Color3.fromRGB(200, 200, 200)
             end
         end
-      
+        
         GameButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
         GameButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     end)
 end
 
+-- // UPDT CVS \\ --
 GameList.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
 
+-- // Buttons \\ --
 LoadButton.MouseButton1Click:Connect(function()
     if not selectedGame then
         LoadButton.Text = "Select Game!"
