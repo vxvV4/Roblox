@@ -439,147 +439,6 @@ local function createMultiDropdown(option, parent)
 		Size = UDim2.new(1, 0, 1, 0),
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
-		ScrollBarImageColor3 = Color3.fromRGB(),
-		ScrollBarThickness = 0,
-		ScrollingDirection = Enum.ScrollingDirection.Y,
-		Parent = option.mainHolder
-	})
-	
-	library:Create("UIPadding", {
-		PaddingTop = UDim.new(0, 5),
-		Parent = content
-	})
-	
-	local layout = library:Create("UIListLayout", {
-		Parent = content
-	})
-	
-	layout.Changed:connect(function()
-		option.mainHolder.Size = UDim2.new(0, 180, 0, (valueCount > 4 and (4 * 34) or layout.AbsoluteContentSize.Y) + 10)
-		content.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
-	end)
-	
-	local inContact
-	round.InputBegan:connect(function(input)
-		if input.UserInputType == ui then
-			if library.activePopup then
-				library.activePopup:Close()
-			end
-			local position = main.AbsolutePosition
-			option.mainHolder.Position = UDim2.new(0, position.X - 4, 0, position.Y + 1)
-			option.open = true
-			option.mainHolder.Visible = true
-			library.activePopup = option
-			content.ScrollBarThickness = 5
-		elseif input.UserInputType == Enum.UserInputType.Touch then
-			if library.activePopup then
-				library.activePopup:Close()
-			end
-			local position = main.AbsolutePosition
-			option.mainHolder.Position = UDim2.new(0, position.X - 4, 0, position.Y + 1)
-			option.open = true
-			option.mainHolder.Visible = true
-			library.activePopup = option
-			content.ScrollBarThickness = 5
-		end
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
-			inContact = true
-			if not option.open then
-				round.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-			end
-		end
-	end)
-	
-	round.InputEnded:connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseMovement then
-			inContact = false
-			if not option.open then
-				round.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-			end
-		end
-	end)
-	
-	function option:AddValue(value)
-		valueCount = valueCount + 1
-		local isSelected = false
-		for _, v in pairs(self.values) do
-			if v == value then
-				isSelected = true
-				break
---// MULTI DROPDOWN \\--
-local function createMultiDropdown(option, parent)
-	local valueCount = 0
-	
-	local main = library:Create("Frame", {
-		LayoutOrder = option.position,
-		Size = UDim2.new(1, 0, 0, 44),
-		BackgroundTransparency = 1,
-		Parent = parent.content
-	})
-	
-	local round = library:Create("Frame", {
-		Position = UDim2.new(0, 5, 0, 3),
-		Size = UDim2.new(1, -10, 1, -8),
-		BackgroundColor3 = Color3.fromRGB(80, 80, 80),
-		BorderSizePixel = 1,
-		BorderColor3 = Color3.fromRGB(60, 60, 60),
-		Parent = main
-	})
-	
-	local titleLabel = library:Create("TextLabel", {
-		Position = UDim2.new(0, 5, 0, 6),
-		Size = UDim2.new(1, -10, 0, 12),
-		BackgroundTransparency = 1,
-		Text = option.text,
-		TextSize = 12,
-		Font = Enum.Font.SourceSansBold,
-		TextColor3 = Color3.fromRGB(140, 140, 140),
-		TextXAlignment = Enum.TextXAlignment.Left,
-		Parent = round
-	})
-	
-	local valueLabel = library:Create("TextLabel", {
-		Position = UDim2.new(0, 5, 0, 18),
-		Size = UDim2.new(1, -20, 0, 20),
-		BackgroundTransparency = 1,
-		Text = "None",
-		TextSize = 15,
-		Font = Enum.Font.SourceSansBold,
-		TextColor3 = Color3.fromRGB(255, 255, 255),
-		TextXAlignment = Enum.TextXAlignment.Left,
-		TextTruncate = Enum.TextTruncate.AtEnd,
-		Parent = round
-	})
-	
-	local arrow = library:Create("TextLabel", {
-		Position = UDim2.new(1, -13, 0, 13),
-		Size = UDim2.new(-1, 26, 1, -26),
-		SizeConstraint = Enum.SizeConstraint.RelativeYY,
-		BackgroundTransparency = 1,
-		Text = "▼",
-		Rotation = 90,
-		TextSize = 12,
-		Font = Enum.Font.SourceSansBold,
-		TextColor3 = Color3.fromRGB(140, 140, 140),
-		Parent = round
-	})
-	
-	option.mainHolder = library:Create("Frame", {
-		ZIndex = 3,
-		Size = UDim2.new(0, 180, 0, 44),
-		BackgroundColor3 = Color3.fromRGB(70, 70, 70),
-		BackgroundTransparency = 0.15,
-		BorderSizePixel = 1,
-		BorderColor3 = Color3.fromRGB(50, 50, 50),
-		Visible = false,
-		Parent = library.base
-	})
-	
-	local content = library:Create("ScrollingFrame", {
-		ZIndex = 3,
-		Size = UDim2.new(1, 0, 1, 0),
-		BackgroundTransparency = 1,
-		BorderSizePixel = 0,
 		ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100),
 		ScrollBarThickness = 0,
 		ScrollingDirection = Enum.ScrollingDirection.Y,
@@ -651,23 +510,13 @@ local function createMultiDropdown(option, parent)
 			end
 		end
 		
-		local label = library:Create("TextLabel", {
+		local labelFrame = library:Create("Frame", {
 			ZIndex = 3,
 			Size = UDim2.new(1, 0, 0, 34),
 			BackgroundColor3 = Color3.fromRGB(70, 70, 70),
 			BackgroundTransparency = 0,
 			BorderSizePixel = 0,
-			Text = value,
-			TextSize = 14,
-			Font = Enum.Font.SourceSansBold,
-			TextColor3 = Color3.fromRGB(255, 255, 255),
-			TextXAlignment = Enum.TextXAlignment.Left,
 			Parent = content
-		})
-		
-		library:Create("UIPadding", {
-			PaddingLeft = UDim.new(0, 32),
-			Parent = label
 		})
 		
 		local checkbox = library:Create("Frame", {
@@ -677,7 +526,7 @@ local function createMultiDropdown(option, parent)
 			BackgroundColor3 = isSelected and Color3.fromRGB(100, 200, 100) or Color3.fromRGB(50, 50, 50),
 			BorderSizePixel = 1,
 			BorderColor3 = Color3.fromRGB(40, 40, 40),
-			Parent = label
+			Parent = labelFrame
 		})
 		
 		local check = library:Create("TextLabel", {
@@ -691,13 +540,26 @@ local function createMultiDropdown(option, parent)
 			Parent = checkbox
 		})
 		
+		local textLabel = library:Create("TextLabel", {
+			ZIndex = 3,
+			Position = UDim2.new(0, 32, 0, 0),
+			Size = UDim2.new(1, -32, 1, 0),
+			BackgroundTransparency = 1,
+			Text = value,
+			TextSize = 14,
+			Font = Enum.Font.SourceSansBold,
+			TextColor3 = Color3.fromRGB(255, 255, 255),
+			TextXAlignment = Enum.TextXAlignment.Left,
+			Parent = labelFrame
+		})
+		
 		local button = library:Create("TextButton", {
 			ZIndex = 4,
 			Size = UDim2.new(1, 0, 1, 0),
 			BackgroundTransparency = 1,
 			Text = "",
 			AutoButtonColor = false,
-			Parent = label
+			Parent = labelFrame
 		})
 		
 		local itemInContact = false
@@ -712,7 +574,7 @@ local function createMultiDropdown(option, parent)
 			if input.UserInputType == Enum.UserInputType.MouseMovement then
 				itemInContact = true
 				if not isScrolling then
-					label.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+					labelFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 				end
 			end
 		end)
@@ -731,22 +593,22 @@ local function createMultiDropdown(option, parent)
 				if startPosition and not isScrolling then
 					local delta = (input.Position - startPosition).Magnitude
 					if delta < 5 then
-						label.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+						labelFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 						self:Toggle(value)
 						wait(0.1)
 					end
 				end
 				startPosition = nil
 				isScrolling = false
-				label.BackgroundColor3 = itemInContact and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(70, 70, 70)
+				labelFrame.BackgroundColor3 = itemInContact and Color3.fromRGB(60, 60, 60) or Color3.fromRGB(70, 70, 70)
 			end
 			if input.UserInputType == Enum.UserInputType.MouseMovement then
 				itemInContact = false
-				label.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+				labelFrame.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
 			end
 		end)
 		
-		self.items[value] = {label = label, checkbox = checkbox, check = check}
+		self.items[value] = {label = labelFrame, checkbox = checkbox, check = check}
 	end
 	
 	for _, value in next, option.list do
