@@ -15,6 +15,10 @@ local supportedGames = {
         name = "Morph Tower",
         scriptUrl = "https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/%5BUPDT%5D%20Morph%20Tower.lua",
     },
+    {
+        name = "Build an army",
+        scriptUrl = "https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/Build%20an%20army.lua",
+    },
 }
 
 local selectedGame = nil
