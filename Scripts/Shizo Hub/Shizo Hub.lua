@@ -25,3 +25,8 @@ end)
 mainTab:AddButton("Infinite Jump", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/Settings/Infinite%20Jump.lua"))()
 end)
+
+-- // *** Add button Main Tab *** \\ --
+mainTab:AddButton("Gravity Changer", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/Settings/Gravity%20Charger.lua"))()
+end)
