@@ -1,5 +1,5 @@
 -- Load the library
-local ToggleLib = loadstring(game:HttpGet("YOUR_PASTEBIN_URL"))()
+local ToggleLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/Shizo%20Hub/Toggle%20Gui%20Shizo/Source.lua"))()
 
 -- Create toggles with callbacks
 ToggleLib:CreateToggle("Infinite Jump", false, function()
