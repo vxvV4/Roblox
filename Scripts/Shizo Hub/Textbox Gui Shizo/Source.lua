@@ -4,21 +4,18 @@ local UserInputService = game:GetService("UserInputService")
 
 local TextboxLibrary = {}
 
--- Clean up old GUI
 pcall(function()
     if CoreGui:FindFirstChild("TextboxLibGUI") then
         CoreGui.TextboxLibGUI:Destroy()
     end
 end)
 
--- Main ScreenGui
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "TextboxLibGUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.ResetOnSpawn = false
 
--- Container for all textboxes
 local textboxContainer = Instance.new("Frame")
 textboxContainer.Name = "TextboxContainer"
 textboxContainer.Size = UDim2.new(0, 220, 0, 0)
@@ -33,12 +30,10 @@ textboxLayout.SortOrder = Enum.SortOrder.LayoutOrder
 textboxLayout.Padding = UDim.new(0, 8)
 textboxLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
--- Auto-update container size
 textboxLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
     textboxContainer.Size = UDim2.new(0, 220, 0, textboxLayout.AbsoluteContentSize.Y)
 end)
 
--- Draggable functionality
 local dragging = false
 local dragInput
 local dragStart
@@ -80,9 +75,8 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Create Textbox Function
 function TextboxLibrary:CreateTextbox(name, placeholder, callback)
-    -- Textbox Frame
+    
     local textboxFrame = Instance.new("Frame")
     textboxFrame.Name = name
     textboxFrame.Size = UDim2.new(0, 210, 0, 70)
@@ -99,7 +93,6 @@ function TextboxLibrary:CreateTextbox(name, placeholder, callback)
     frameStroke.Thickness = 2
     frameStroke.Parent = textboxFrame
     
-    -- Title Label
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.new(1, -10, 0, 20)
     titleLabel.Position = UDim2.new(0, 10, 0, 5)
@@ -110,8 +103,7 @@ function TextboxLibrary:CreateTextbox(name, placeholder, callback)
     titleLabel.TextSize = 13
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = textboxFrame
-    
-    -- Textbox
+
     local textbox = Instance.new("TextBox")
     textbox.Size = UDim2.new(1, -20, 0, 30)
     textbox.Position = UDim2.new(0, 10, 0, 30)
@@ -130,7 +122,6 @@ function TextboxLibrary:CreateTextbox(name, placeholder, callback)
     textboxCorner.CornerRadius = UDim.new(0, 6)
     textboxCorner.Parent = textbox
     
-    -- Focus highlight
     textbox.Focused:Connect(function()
         TweenService:Create(frameStroke, TweenInfo.new(0.2), {
             Color = Color3.fromRGB(160, 60, 255)
