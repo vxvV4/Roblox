@@ -27,3 +27,26 @@ end)
 window:Button("TP to Spawn", function()
     game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(0, 50, 0)
 end)
+
+--[[
+
+This is The Toggle On/Off Functions
+
+
+
+local running = false
+local connection
+
+window:Toggle("Name", false, function(state)
+    if state then
+        -- TURN ON
+        running = true
+        -- Start your loop here
+    else
+        -- TURN OFF
+        running = false
+        if connection then connection:Disconnect() end
+    end
+end)
+
+--]]
