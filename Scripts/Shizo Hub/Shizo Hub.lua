@@ -9,6 +9,6 @@ local mainTab = Library:CreateTab("Main")
 
 -- Add buttons to Main tab
 mainTab:AddButton("Infinite Jump", function()
-    print("Infinite Jump activated!")
-    -- Your infinite jump code here
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/Settings/Walk%20speed.lua"))()
+    end)
 end)
