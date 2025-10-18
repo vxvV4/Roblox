@@ -126,7 +126,7 @@ function SliderLibrary:CreateSlider(name, min, max, default, callback)
     local sliderBgCorner = Instance.new("UICorner")
     sliderBgCorner.CornerRadius = UDim.new(1, 0)
     sliderBgCorner.Parent = sliderBg
-  
+    
     local sliderFill = Instance.new("Frame")
     sliderFill.Size = UDim2.new((currentValue - min) / (max - min), 0, 1, 0)
     sliderFill.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
@@ -168,21 +168,32 @@ function SliderLibrary:CreateSlider(name, min, max, default, callback)
         sliderDragging = true
     end)
     
+    sliderBtn.MouseButton1Up:Connect(function()
+        sliderDragging = false
+    end)
+    
     UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             sliderDragging = false
         end
     end)
     
     UserInputService.InputChanged:Connect(function(input)
-        if sliderDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        if sliderDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             updateSlider(input)
         end
     end)
     
     sliderBg.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             updateSlider(input)
+            sliderDragging = true
+        end
+    end)
+    
+    sliderBg.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            sliderDragging = false
         end
     end)
     
