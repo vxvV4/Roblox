@@ -1,4 +1,4 @@
-local hizo = loadstring(game:HttpGet("your_script_url"))()
+local hizo = loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Script%20Maker/Hizo%20Library.luaU"))()
 local window = hizo:Window("hizo")
 
 local Players = game:GetService("Players")
