@@ -77,9 +77,26 @@ end)
 
 function ButtonLibrary:CreateButton(name, callback)
     
+    local buttonFrameContainer = Instance.new("Frame")
+    buttonFrameContainer.Name = name .. "_Container"
+    buttonFrameContainer.Size = UDim2.new(0, 180, 0, 45)
+    buttonFrameContainer.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    buttonFrameContainer.BorderSizePixel = 0
+    buttonFrameContainer.Parent = buttonContainer
+    
+    local containerCorner = Instance.new("UICorner")
+    containerCorner.CornerRadius = UDim.new(0, 10)
+    containerCorner.Parent = buttonFrameContainer
+    
+    local containerStroke = Instance.new("UIStroke")
+    containerStroke.Color = Color3.fromRGB(138, 43, 226)
+    containerStroke.Thickness = 2
+    containerStroke.Parent = buttonFrameContainer
+    
     local buttonFrame = Instance.new("TextButton")
     buttonFrame.Name = name
-    buttonFrame.Size = UDim2.new(0, 180, 0, 45)
+    buttonFrame.Size = UDim2.new(1, -4, 1, -4)
+    buttonFrame.Position = UDim2.new(0, 2, 0, 2)
     buttonFrame.BackgroundColor3 = Color3.fromRGB(138, 43, 226)
     buttonFrame.Text = name
     buttonFrame.TextColor3 = Color3.fromRGB(0, 0, 0)
@@ -87,16 +104,11 @@ function ButtonLibrary:CreateButton(name, callback)
     buttonFrame.TextSize = 14
     buttonFrame.TextWrapped = true
     buttonFrame.BorderSizePixel = 0
-    buttonFrame.Parent = buttonContainer
+    buttonFrame.Parent = buttonFrameContainer
     
     local frameCorner = Instance.new("UICorner")
-    frameCorner.CornerRadius = UDim.new(0, 10)
+    frameCorner.CornerRadius = UDim.new(0, 8)
     frameCorner.Parent = buttonFrame
-    
-    local frameStroke = Instance.new("UIStroke")
-    frameStroke.Color = Color3.fromRGB(138, 43, 226)
-    frameStroke.Thickness = 2
-    frameStroke.Parent = buttonFrame
     
     buttonFrame.MouseButton1Click:Connect(function()
         if callback then
@@ -116,7 +128,7 @@ function ButtonLibrary:CreateButton(name, callback)
         }):Play()
     end)
     
-    return buttonFrame
+    return buttonFrameContainer
 end
 
 return ButtonLibrary
