@@ -30,3 +30,8 @@ end)
 mainTab:AddButton("Gravity Changer", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/Settings/Gravity%20Charger.lua"))()
 end)
+
+-- // *** Add button Main Tab *** \\ --
+mainTab:AddButton("Noclip", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/Settings/Noclip.lua"))()
+end)
