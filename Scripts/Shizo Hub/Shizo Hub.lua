@@ -35,3 +35,8 @@ end)
 mainTab:AddButton("Noclip", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/Settings/Noclip.lua"))()
 end)
+
+-- // *** Add button Main Tab *** \\ --
+mainTab:AddButton("Esp", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/Settings/Esp.lua"))()
+end)
