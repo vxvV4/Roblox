@@ -12,8 +12,8 @@ gui.Parent = player:WaitForChild("PlayerGui")
 
 local main = Instance.new("Frame")
 main.Name = "Main"
-main.Size = UDim2.new(0, 280, 0, 225)
-main.Position = UDim2.new(0.5, -140, 0.5, -90)
+main.Size = UDim2.new(0, 280, 0, 280)
+main.Position = UDim2.new(0.5, -140, 0.5, -140)
 main.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 main.BackgroundTransparency = 0.3
 main.BorderSizePixel = 0
@@ -122,6 +122,24 @@ local toggleCorner = Instance.new("UICorner")
 toggleCorner.CornerRadius = UDim.new(0, 8)
 toggleCorner.Parent = toggle
 
+-- ANTI-HEAVY PUNCH TOGGLE
+local antiHeavyToggle = Instance.new("TextButton")
+antiHeavyToggle.Name = "AntiHeavyToggle"
+antiHeavyToggle.Size = UDim2.new(0, 240, 0, 35)
+antiHeavyToggle.Position = UDim2.new(0.5, -120, 0, 185)
+antiHeavyToggle.BackgroundColor3 = Color3.fromRGB(35, 30, 30)
+antiHeavyToggle.BackgroundTransparency = 0.2
+antiHeavyToggle.Text = "🛡️ Anti-Heavy Punch: OFF"
+antiHeavyToggle.TextColor3 = Color3.fromRGB(255, 80, 80)
+antiHeavyToggle.Font = Enum.Font.GothamSemibold
+antiHeavyToggle.TextSize = 14
+antiHeavyToggle.BorderSizePixel = 0
+antiHeavyToggle.Parent = main
+
+local antiHeavyCorner = Instance.new("UICorner")
+antiHeavyCorner.CornerRadius = UDim.new(0, 8)
+antiHeavyCorner.Parent = antiHeavyToggle
+
 local dropdown = Instance.new("Frame")
 dropdown.Name = "Dropdown"
 dropdown.Size = UDim2.new(0, 240, 0, 35)
@@ -166,15 +184,17 @@ listLayout.Padding = UDim.new(0, 2)
 listLayout.Parent = dropList
 
 local comboActive = false
+local antiHeavyActive = false
 local targetPlayer = nil
 local originalPos = nil
 local followConnection = nil
 local attackConnection = nil
+local antiHeavyConnection = nil
 local capturedHeavyID = nil
 local capturedLightID = nil
 local isListeningHeavy = false
 local isListeningLight = false
-local currentAttackType = "Heavy" -- Heavy or Light
+local currentAttackType = "Heavy"
 
 local function updatePlayerList()
 	for _, child in pairs(dropList:GetChildren()) do
@@ -221,7 +241,6 @@ local function updatePlayerList()
 end
 
 local function attackCombo()
-
 	local attackID = capturedHeavyID or capturedLightID
 	local attackInput = capturedHeavyID and "Heavy Punch" or "Light Punch"
 	
@@ -239,6 +258,60 @@ local function attackCombo()
 	pcall(function()
 		ReplicatedStorage:WaitForChild("Events"):WaitForChild("Attack"):FireServer(unpack(args))
 	end)
+end
+
+local function startAntiHeavy()
+	if antiHeavyConnection then
+		antiHeavyConnection:Disconnect()
+	end
+	
+	-- Monitor incoming attacks and dodge
+	antiHeavyConnection = RunService.Heartbeat:Connect(function()
+		if not antiHeavyActive or not player.Character then
+			return
+		end
+		
+		local playerRoot = player.Character:FindFirstChild("HumanoidRootPart")
+		local playerHum = player.Character:FindFirstChild("Humanoid")
+		
+		if not playerRoot or not playerHum then
+			return
+		end
+		
+		-- Check for nearby players attacking
+		for _, otherPlayer in pairs(Players:GetPlayers()) do
+			if otherPlayer ~= player and otherPlayer.Character then
+				local otherRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
+				local otherHum = otherPlayer.Character:FindFirstChild("Humanoid")
+				
+				if otherRoot and otherHum and otherHum.Health > 0 then
+					local distance = (playerRoot.Position - otherRoot.Position).Magnitude
+					
+					-- If someone is close (attacking range)
+					if distance < 10 then
+						-- Dodge backwards quickly
+						local dodgeDirection = (playerRoot.Position - otherRoot.Position).Unit
+						local dodgeDistance = 15 -- studs away
+						
+						local newPosition = playerRoot.Position + (dodgeDirection * dodgeDistance)
+						
+						-- Teleport away (instant dodge)
+						playerRoot.CFrame = CFrame.new(newPosition, otherRoot.Position)
+						
+						-- Small cooldown to avoid spam
+						task.wait(0.5)
+					end
+				end
+			end
+		end
+	end)
+end
+
+local function stopAntiHeavy()
+	if antiHeavyConnection then
+		antiHeavyConnection:Disconnect()
+		antiHeavyConnection = nil
+	end
 end
 
 local function startFollowing()
@@ -261,9 +334,8 @@ local function startFollowing()
 			local targetHum = targetPlayer.Character:FindFirstChild("Humanoid")
 			
 			if targetRoot and playerRoot and targetHum and targetHum.Health > 0 then
-				
 				local targetCFrame = targetRoot.CFrame
-				local offset = targetCFrame.LookVector * -3 -- 3 studs sa harap
+				local offset = targetCFrame.LookVector * -3
 				
 				playerRoot.CFrame = CFrame.new(targetRoot.Position + offset, targetRoot.Position)
 			end
@@ -355,6 +427,27 @@ getLightIdBtn.MouseButton1Click:Connect(function()
 				getLightIdBtn.BackgroundColor3 = Color3.fromRGB(200, 120, 40)
 			end
 		end)
+	end
+end)
+
+-- ANTI-HEAVY PUNCH TOGGLE
+antiHeavyToggle.MouseButton1Click:Connect(function()
+	antiHeavyActive = not antiHeavyActive
+	
+	if antiHeavyActive then
+		antiHeavyToggle.Text = "🛡️ Anti-Heavy Punch: ON"
+		antiHeavyToggle.TextColor3 = Color3.fromRGB(80, 255, 80)
+		antiHeavyToggle.BackgroundColor3 = Color3.fromRGB(30, 60, 30)
+		
+		startAntiHeavy()
+		print("🛡️ Anti-Heavy Punch ACTIVATED! Auto-dodge enabled!")
+	else
+		antiHeavyToggle.Text = "🛡️ Anti-Heavy Punch: OFF"
+		antiHeavyToggle.TextColor3 = Color3.fromRGB(255, 80, 80)
+		antiHeavyToggle.BackgroundColor3 = Color3.fromRGB(35, 30, 30)
+		
+		stopAntiHeavy()
+		print("🛡️ Anti-Heavy Punch DISABLED!")
 	end
 end)
 
@@ -458,4 +551,7 @@ Players.PlayerRemoving:Connect(function(p)
 end)
 
 task.wait(0.5)
-print("Not work? Try Manually Use your Pumch or Heavy punch and detect yout ID")
+print("AUX HUB Loaded!")
+print(" Anti-Heavy Punch: Protects you from attacks!")
+print(" Goku/Gojo Combo: Combo your target!")
+print("Not work? Try Manually Use your Punch or Heavy punch and detect your ID")
