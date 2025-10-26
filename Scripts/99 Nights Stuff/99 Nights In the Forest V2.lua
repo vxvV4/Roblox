@@ -1,8 +1,7 @@
--- 99 Nights in the Forest Script - COMPLETE CONVERSION
--- Load the FIXED library (use your merged Part 1 + Part 2 code)
+-- 99 Nights in the Forest - COMPLETE V3 with Dropdowns & NEW Items
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/99%20Nights%20Stuff/Library.lua"))()
 
--- Services and variables
+-- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -12,32 +11,28 @@ local char = player.Character or player.CharacterAdded:Wait()
 local hrp = char:WaitForChild("HumanoidRootPart")
 local workspaceItems = workspace:WaitForChild("Items")
 
--- Script variables
-local showCoordinates = false
-local espEnabled = false
+-- Variables
+local showCoordinates, espEnabled = false, false
 local currentFOV = 70
-local coordinatesGui = nil
-local espFolder = nil
-local autoBringEnabled = false
-local autoGrindersEnabled = false
-local autoCampfireEnabled = false
-local autoCookFoodEnabled = false
-local killAuraEnabled = false
-local autoPlantEnabled = false
+local coordinatesGui, espFolder = nil, nil
+local autoBringEnabled, autoGrindersEnabled = false, false
+local autoCampfireEnabled, autoCookFoodEnabled = false, false
+local killAuraEnabled, autoPlantEnabled = false, false
 local autoOpenChestsEnabled = true
-local farmLogActive = false
-local farmLogTimer = 0
-local chestRange = 50
-local bringDelay = 0.1
-local maxItemsPerFrame = 3
-local isProcessing = false
+local farmLogActive, farmLogTimer = false, 0
+local chestRange, bringDelay = 50, 0.1
+local maxItemsPerFrame, isProcessing = 3, false
 local campfirePosition = Vector3.new(0.5, 8.0, -0.3)
 local originalFogEnd = Lighting.FogEnd
-local originalWalkSpeed = 16
-local originalJumpPower = 50
+local originalWalkSpeed, originalJumpPower = 16, 50
 local rescuedKids = {}
 
--- Enhanced grinder positions
+-- SELECTED ITEMS FOR DROPDOWNS
+local selectedCampfireItems = {}
+local selectedCookItems = {}
+local selectedBringItems = {}
+local selectedGrindItems = {}
+
 local grindPositions = {
     Vector3.new(20.8, 6.3, -5.2),
     Vector3.new(22, 6.3, -5.2),
@@ -45,19 +40,32 @@ local grindPositions = {
     Vector3.new(20.8, 6.3, -3),
 }
 
--- Item categories - COMPLETE LISTS
+-- ========== COMPLETE ITEM LISTS ==========
+
 local allFoodItems = {
     "Apple", "Berry", "Cake", "Carrot", "Cooked Morsel", "Cooked Steak", 
     "Hearty Stew", "Morsel", "Pepper", "Steak", "Stew", "Fish", "Bread", 
-    "Mushroom", "Rabbit", "Cooked Fish", "Raw Fish", "Meat", "Cooked Meat"
+    "Mushroom", "Rabbit", "Cooked Fish", "Raw Fish", "Meat", "Cooked Meat",
+    "Cooked Rabbit", "Berry Pie", "Carrot Soup"
+}
+
+local fishItems = {
+    "Mackerel", "Salmon", "Clownfish", "Swordfish", "Jellyfish", 
+    "Char", "Eel", "Shark", "Raw Fish", "Cooked Fish"
+}
+
+local potionIngredients = {
+    "Morsel", "Bunny Foot", "Coal", "Mackerel", "Steak", "Berry",
+    "Dripleaf", "Moonflower", "Stareweed", "Cave Vine"
 }
 
 local cookableFoods = {
-    "Morsel", "Steak", "Fish", "Raw Fish", "Meat", "Rabbit"
+    "Morsel", "Steak", "Fish", "Raw Fish", "Meat", "Rabbit", "Mackerel", "Salmon"
 }
 
 local fuelItems = {
-    "Coal", "Log", "Chair", "Oil Barrel", "Fuel Canister", "Matches", "Lighter"
+    "Coal", "Log", "Chair", "Oil Barrel", "Fuel Canister", "Matches", 
+    "Lighter", "Biofuel", "Wood"
 }
 
 local grindableItems = {
@@ -65,12 +73,13 @@ local grindableItems = {
     "Old Car Engine", "Tyre", "Broken Fan", "Broken Microwave", 
     "Broken Radio", "Old Radio", "Washing Machine", "UFO Scrap", 
     "UFO Junk", "UFO Component", "Log", "Cultist Experiment",
-    "Cultist Prototype", "Pipe", "Wire", "Battery", "Circuit", "Gear", "Spring"
+    "Cultist Prototype", "Pipe", "Wire", "Battery", "Circuit", 
+    "Gear", "Spring", "Volcanic Rock"
 }
 
 local cultistItems = {
     "Crossbow Cultist", "Cultist", "Cultist Experiment", 
-    "Cultist Prototype", "Cultist Gem", "Mega Cultist"
+    "Cultist Prototype", "Cultist Gem", "Mega Cultist", "Cultist King"
 }
 
 local seedItems = {
@@ -78,24 +87,39 @@ local seedItems = {
     "Flower Seed Packs", "Chili Seed Packs"
 }
 
-local flashlightItems = {"Old Flashlight", "Strong Flashlight"}
+local flashlightItems = {
+    "Old Flashlight", "Strong Flashlight", "Lantern"
+}
+
+local fishingRods = {
+    "Old Rod", "Good Rod", "Strong Rod"
+}
+
+local tamingFlutes = {
+    "Deer Flute", "Wolf Flute", "Bear Flute"
+}
+
+local trimKits = {
+    "Leather Trim", "Iron Trim", "Thorn Trim", "Poison Trim", "Alien Trim"
+}
 
 local toolsItems = {
     "Chainsaw", "Giant Sack", "Good Axe", "Good Sack", 
     "Old Axe", "Old Sack", "Strong Axe", "Hammer", 
-    "Pickaxe", "Shovel", "Knife"
+    "Pickaxe", "Shovel", "Knife", "Medium Sack"
 }
 
 local meleeWeapons = {
-    "Katana", "Morningstar", "Spear", "Inferno Sword"
+    "Katana", "Morningstar", "Spear", "Inferno Sword", "Cultist Mace"
 }
 
 local rangedWeapons = {
-    "Revolver", "Rifle", "Tactical Shotgun", "Crossbow"
+    "Revolver", "Rifle", "Tactical Shotgun", "Crossbow", 
+    "Inferno Crossbow", "Ray Gun", "Laser Cannon"
 }
 
 local ammoItems = {
-    "Revolver Ammo", "Rifle Ammo", "Shotgun Ammo"
+    "Revolver Ammo", "Rifle Ammo", "Shotgun Ammo", "Crossbow Bolt"
 }
 
 local armorItems = {
@@ -104,9 +128,8 @@ local armorItems = {
     "Poison Armour", "Alien Armor", "Alien Armour"
 }
 
-local corpseFuelItems = {
-    "Alpha Wolf Corpse", "Bear Corpse", "Wolf Corpse", 
-    "Biofuel", "Chair", "Coal", "Fuel Canister", "Oil Barrel", "Log"
+local warmClothing = {
+    "Winter Coat", "Fur Coat", "Warm Vest", "Thermal Jacket"
 }
 
 local materialsItems = {
@@ -114,22 +137,33 @@ local materialsItems = {
     "Car Engine", "Old Car Engine", "Metal Chair", "Sheet Metal",
     "Tyre", "Washing Machine", "Old Radio", "UFO Scrap",
     "UFO Junk", "UFO Component", "Scrap", "Pipe", "Wire",
-    "Battery", "Circuit", "Spring", "Volcanic Rock", "Lava Crystal", "Sulfur"
+    "Battery", "Circuit", "Spring", "Volcanic Rock", "Lava Crystal", 
+    "Sulfur", "Meteor Metal"
 }
 
 local animalParts = {
-    "Alpha Wolf Pelt", "Bear Pelt", "Rabbit Foot", "Wolf Pelt"
+    "Alpha Wolf Pelt", "Bear Pelt", "Rabbit Foot", "Wolf Pelt", "Deer Antler"
 }
 
 local medicalItems = {
-    "Bandage", "Medkit", "Wildfire Potion"
+    "Bandage", "Medkit", "Wildfire Potion", "Health Potion"
 }
 
 local containerItems = {
-    "Barrel", "Crate", "Box", "Container", "Infernal Sack"
+    "Barrel", "Crate", "Box", "Container", "Infernal Sack", "Storage Chest"
 }
 
--- Anti-AFK function
+local furnitureItems = {
+    "Bed", "Chair", "Table", "Campfire Bench", "Storage Shelf",
+    "Weapon Rack", "Armor Stand", "Crafting Table", "Decorative Plant"
+}
+
+local specialItems = {
+    "Cauldron", "Teleporter", "Radio", "Map", "Compass", "Watch"
+}
+
+-- ========== CORE FUNCTIONS ==========
+
 local function antiAFK()
     local VirtualUser = game:GetService("VirtualUser")
     player.Idled:Connect(function()
@@ -139,7 +173,6 @@ local function antiAFK()
     end)
 end
 
--- Core functions
 local function startDrag(item)
     pcall(function()
         ReplicatedStorage.RemoteEvents.RequestStartDraggingItem:FireServer(item)
@@ -152,31 +185,23 @@ local function stopDrag(item)
     end)
 end
 
--- Auto Plant function
 local function autoPlant()
     if not autoPlantEnabled then return end
-    
     local leftLegPos = hrp.Position + Vector3.new(-1, -3, 0)
     local rightLegPos = hrp.Position + Vector3.new(1, -3, 0)
     local plantPos = math.random() > 0.5 and leftLegPos or rightLegPos
-    
     pcall(function()
-        local args = {
-            Instance.new("Model", nil),
-            plantPos
-        }
+        local args = {Instance.new("Model", nil), plantPos}
         ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("RequestPlantItem"):InvokeServer(unpack(args))
     end)
 end
 
--- Smart Lost Child Finding
 local function findSmartLostChild()
     local chars = workspace:FindFirstChild("Characters")
     if chars then
         for _, kid in pairs(chars:GetChildren()) do
             if kid:IsA("Model") and (kid.Name:lower():find("lost") or kid.Name:lower():find("child") or kid.Name:lower():find("kid")) then
                 local kidId = kid.Name .. "_" .. tostring(kid:GetDebugId())
-                
                 if not rescuedKids[kidId] then
                     if kid:FindFirstChild("HumanoidRootPart") then
                         rescuedKids[kidId] = true
@@ -189,318 +214,95 @@ local function findSmartLostChild()
             end
         end
     end
-    
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("Model") and (obj.Name:lower():find("lost") or obj.Name:lower():find("child") or obj.Name:lower():find("kid")) then
-            local kidId = obj.Name .. "_" .. tostring(obj:GetDebugId())
-            
-            if not rescuedKids[kidId] then
-                if obj:FindFirstChild("HumanoidRootPart") then
-                    rescuedKids[kidId] = true
-                    return obj.HumanoidRootPart.Position
-                elseif obj.PrimaryPart then
-                    rescuedKids[kidId] = true
-                    return obj.PrimaryPart.Position
-                end
-            end
-        end
-    end
-    
     return nil
 end
 
--- Farm Log function
 local function farmLog20Seconds()
     if farmLogActive then return end
-    
-    farmLogActive = true
-    farmLogTimer = 20
-    
+    farmLogActive, farmLogTimer = true, 20
     spawn(function()
-        local smallTreesFound = 0
-        local targetTrees = 20
-        
+        local smallTreesFound, targetTrees = 0, 20
         local function searchForSmallTrees(parent)
             for _, item in ipairs(parent:GetChildren()) do
                 if smallTreesFound >= targetTrees then break end
-                
                 if item.Name == "Small Tree" then
                     local targetPart = nil
-                    
                     if item:IsA("Model") then
-                        if item.PrimaryPart then
-                            targetPart = item.PrimaryPart
-                        else
-                            for _, child in ipairs(item:GetDescendants()) do
-                                if child:IsA("Part") or child:IsA("MeshPart") then
-                                    targetPart = child
-                                    break
-                                end
-                            end
-                        end
+                        targetPart = item.PrimaryPart or item:FindFirstChildWhichIsA("Part") or item:FindFirstChildWhichIsA("MeshPart")
                     elseif item:IsA("Part") or item:IsA("MeshPart") then
                         targetPart = item
                     end
-                    
                     if targetPart then
-                        local dropPos = hrp.Position + Vector3.new(
-                            math.random(-3, 3), 
-                            2,
-                            math.random(-3, 3)
-                        )
-                        
-                        pcall(function()
-                            if item:IsA("Model") and item.PrimaryPart then
-                                item:SetPrimaryPartCFrame(CFrame.new(dropPos))
-                            elseif targetPart then
-                                targetPart.CFrame = CFrame.new(dropPos)
-                                targetPart.Position = dropPos
-                            end
-                        end)
-                        
-                        pcall(function()
-                            startDrag(item)
-                            wait(0.1)
-                            stopDrag(item)
-                        end)
-                        
-                        smallTreesFound = smallTreesFound + 1
-                        wait(0.2)
-                    end
-                end
-                
-                if item:IsA("Folder") or item:IsA("Model") then
-                    searchForSmallTrees(item)
-                end
-            end
-        end
-        
-        searchForSmallTrees(workspace)
-        
-        if smallTreesFound < targetTrees then
-            for _, item in ipairs(workspaceItems:GetChildren()) do
-                if smallTreesFound >= targetTrees then break end
-                
-                if item.Name == "Wood" or item.Name == "Log" then
-                    local targetPart = nil
-                    
-                    if item:IsA("Model") then
-                        if item.PrimaryPart then
-                            targetPart = item.PrimaryPart
-                        else
-                            for _, child in ipairs(item:GetDescendants()) do
-                                if child:IsA("Part") or child:IsA("MeshPart") then
-                                    targetPart = child
-                                    break
-                                end
-                            end
-                        end
-                    elseif item:IsA("Part") or item:IsA("MeshPart") then
-                        targetPart = item
-                    end
-                    
-                    if targetPart then
-                        local dropPos = hrp.Position + Vector3.new(
-                            math.random(-3, 3), 
-                            2,
-                            math.random(-3, 3)
-                        )
-                        
+                        local dropPos = hrp.Position + Vector3.new(math.random(-3, 3), 2, math.random(-3, 3))
                         pcall(function()
                             if item:IsA("Model") and item.PrimaryPart then
                                 item:SetPrimaryPartCFrame(CFrame.new(dropPos))
                             else
-                                targetPart.CFrame = CFrame.new(dropPos)
                                 targetPart.Position = dropPos
                             end
                         end)
-                        
-                        pcall(function()
-                            startDrag(item)
-                            wait(0.1)
-                            stopDrag(item)
-                        end)
-                        
+                        pcall(function() startDrag(item); wait(0.1); stopDrag(item) end)
                         smallTreesFound = smallTreesFound + 1
                         wait(0.2)
                     end
                 end
+                if item:IsA("Folder") or item:IsA("Model") then searchForSmallTrees(item) end
             end
         end
+        searchForSmallTrees(workspace)
     end)
-    
     spawn(function()
-        while farmLogTimer > 0 and farmLogActive do
-            wait(1)
-            farmLogTimer = farmLogTimer - 1
+        while farmLogTimer > 0 and farmLogActive do wait(1); farmLogTimer = farmLogTimer - 1 end
+        if farmLogActive and hrp then
+            pcall(function() hrp.CFrame = CFrame.new(campfirePosition + Vector3.new(0, 5, 0)) end)
         end
-        
-        if farmLogActive then
-            if hrp then
-                pcall(function()
-                    hrp.CFrame = CFrame.new(campfirePosition + Vector3.new(0, 5, 0))
-                end)
-            end
-        end
-        
         farmLogActive = false
-    end)
-end
-
--- Out Build function
-local function outBuild()
-    spawn(function()
-        pcall(function()
-            local args = {
-                "FireAllClients",
-                Instance.new("Model", nil)
-            }
-            ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("EquipItemHandle"):FireServer(unpack(args))
-        end)
-        
-        wait(1)
-        
-        local builds = {
-            {
-                cframe = CFrame.new(15.795425415039062, 5.4606242179870605, 26.283519744873047, 0.8064058423042297, 0, 0.5913625359535217, 0, 1, 0, -0.5913625359535217, 0, 0.8064058423042297),
-                position = Vector3.new(15.795425415039062, 0.9606242179870605, 26.283519744873047),
-                rotation = CFrame.new(0, 0, 0, 0.8064058423042297, 0, 0.5913625359535217, 0, 1, 0, -0.5913625359535217, 0, 0.8064058423042297)
-            },
-            {
-                cframe = CFrame.new(5.438966751098633, 5.4606242179870605, 31.235794067382812, 0.9908662438392639, 0, 0.13484829664230347, 0, 1, 0, -0.13484829664230347, 0, 0.9908662438392639),
-                position = Vector3.new(5.438966751098633, 0.9606242179870605, 31.235794067382812),
-                rotation = CFrame.new(0, 0, 0, 0.9908662438392639, 0, 0.13484829664230347, 0, 1, 0, -0.13484829664230347, 0, 0.9908662438392639)
-            },
-            {
-                cframe = CFrame.new(-6.363698482513428, 5.4606242179870605, 30.34702491760254, 0.9584082961082458, 0, -0.2854006588459015, 0, 1, 0, 0.2854006588459015, 0, 0.9584082961082458),
-                position = Vector3.new(-6.363698482513428, 0.9606242179870605, 30.34702491760254),
-                rotation = CFrame.new(0, 0, 0, 0.9584082961082458, 0, -0.2854006588459015, 0, 1, 0, 0.2854006588459015, 0, 0.9584082961082458)
-            },
-            {
-                cframe = CFrame.new(-16.738080978393555, 5.4606242179870605, 26.39202880859375, 0.8259918093681335, 0, -0.5636822581291199, 0, 1.0000001192092896, 0, 0.5636823177337646, 0, 0.825991690158844),
-                position = Vector3.new(-16.738080978393555, 0.9606242179870605, 26.39202880859375),
-                rotation = CFrame.new(0, 0, 0, 0.8259918093681335, 0, -0.5636822581291199, 0, 1.0000001192092896, 0, 0.5636823177337646, 0, 0.825991690158844)
-            },
-            {
-                cframe = CFrame.new(24.503076553344727, 5.469470977783203, 18.115869522094727, 0.5435669422149658, 0, 0.8393658399581909, 0, 1, 0, -0.8393658399581909, 0, 0.5435669422149658),
-                position = Vector3.new(24.503076553344727, 0.9694709777832031, 18.115869522094727),
-                rotation = CFrame.new(0, 0, 0, 0.5435669422149658, 0, 0.8393658399581909, 0, 1, 0, -0.8393658399581909, 0, 0.5435669422149658)
-            }
-        }
-        
-        local successCount = 0
-        
-        for i, build in ipairs(builds) do
-            local success = pcall(function()
-                local args = {
-                    Instance.new("Model", nil),
-                    {
-                        Valid = true,
-                        CFrame = build.cframe,
-                        Position = build.position
-                    },
-                    build.rotation
-                }
-                ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("RequestPlaceStructure"):InvokeServer(unpack(args))
-            end)
-            
-            if success then
-                successCount = successCount + 1
-            end
-            
-            wait(0.2)
-        end
-        
-        pcall(function()
-            local args = {
-                "FireAllClients",
-                Instance.new("Model", nil)
-            }
-            ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("UnequipItemHandle"):FireServer(unpack(args))
-        end)
     end)
 end
 
 local function bringItemsToPlayer(itemsToFind)
     if isProcessing then return end
     isProcessing = true
-    
     spawn(function()
         local itemsToProcess = {}
-        
         for _, item in ipairs(workspaceItems:GetChildren()) do
             if not item.Name:find("Chest") then
-                local shouldInclude = false
-                
-                if #itemsToFind == 0 then
-                    shouldInclude = true
-                else
+                local shouldInclude = #itemsToFind == 0
+                if not shouldInclude then
                     for _, targetItem in ipairs(itemsToFind) do
-                        local itemNameLower = item.Name:lower()
-                        local targetLower = targetItem:lower()
-                        
-                        if itemNameLower:find(targetLower) or targetLower:find(itemNameLower) then
-                            shouldInclude = true
-                            break
-                        end
-                        
-                        if item.Name:find(targetItem) or targetItem:find(item.Name) then
+                        if item.Name:lower():find(targetItem:lower()) or targetItem:lower():find(item.Name:lower()) then
                             shouldInclude = true
                             break
                         end
                     end
                 end
-                
-                if shouldInclude then
-                    table.insert(itemsToProcess, item)
-                end
+                if shouldInclude then table.insert(itemsToProcess, item) end
             end
         end
-        
         for i = 1, #itemsToProcess, maxItemsPerFrame do
             local batch = {}
-            
             for j = i, math.min(i + maxItemsPerFrame - 1, #itemsToProcess) do
                 local item = itemsToProcess[j]
                 if item and item.Parent then
-                    local targetPart
-                    for _, child in ipairs(item:GetDescendants()) do
-                        if child:IsA("MeshPart") or child:IsA("Part") then
-                            targetPart = child
-                            break
-                        end
-                    end
-                    
+                    local targetPart = item:FindFirstChildWhichIsA("MeshPart") or item:FindFirstChildWhichIsA("Part")
                     if targetPart then
                         local dropPos = hrp.Position + Vector3.new(math.random(-3,3), 3, math.random(-3,3))
-                        
-                        if item:IsA("Model") and item.PrimaryPart then
-                            item:SetPrimaryPartCFrame(CFrame.new(dropPos))
-                        else
-                            targetPart.Position = dropPos
-                        end
+                        pcall(function()
+                            if item:IsA("Model") and item.PrimaryPart then
+                                item:SetPrimaryPartCFrame(CFrame.new(dropPos))
+                            else
+                                targetPart.Position = dropPos
+                            end
+                        end)
                     end
                     table.insert(batch, item)
                 end
             end
-            
-            for _, item in ipairs(batch) do
-                if item and item.Parent then
-                    startDrag(item)
-                end
-            end
-            
+            for _, item in ipairs(batch) do if item and item.Parent then startDrag(item) end end
             task.wait(bringDelay)
-            
-            for _, item in ipairs(batch) do
-                if item and item.Parent then
-                    stopDrag(item)
-                end
-            end
-            
+            for _, item in ipairs(batch) do if item and item.Parent then stopDrag(item) end end
             task.wait(0.02)
         end
-        
         isProcessing = false
     end)
 end
@@ -508,84 +310,42 @@ end
 local function bringItemsToCampfire(itemsToFind)
     if isProcessing then return end
     isProcessing = true
-    
     spawn(function()
         local itemsToProcess = {}
-        
         for _, item in ipairs(workspaceItems:GetChildren()) do
             if not item.Name:find("Chest") then
-                local shouldInclude = false
-                
                 for _, targetItem in ipairs(itemsToFind) do
-                    local itemNameLower = item.Name:lower()
-                    local targetLower = targetItem:lower()
-                    
-                    if itemNameLower:find(targetLower) or targetLower:find(itemNameLower) then
-                        shouldInclude = true
+                    if item.Name:lower():find(targetItem:lower()) or targetItem:lower():find(item.Name:lower()) then
+                        table.insert(itemsToProcess, item)
                         break
                     end
-                    
-                    if item.Name:find(targetItem) or targetItem:find(item.Name) then
-                        shouldInclude = true
-                        break
-                    end
-                end
-                
-                if shouldInclude then
-                    table.insert(itemsToProcess, item)
                 end
             end
         end
-        
         for i = 1, #itemsToProcess, maxItemsPerFrame do
             local batch = {}
-            
             for j = i, math.min(i + maxItemsPerFrame - 1, #itemsToProcess) do
                 local item = itemsToProcess[j]
                 if item and item.Parent then
-                    local targetPart
-                    for _, child in ipairs(item:GetDescendants()) do
-                        if child:IsA("MeshPart") or child:IsA("Part") then
-                            targetPart = child
-                            break
-                        end
-                    end
-                    
+                    local targetPart = item:FindFirstChildWhichIsA("MeshPart") or item:FindFirstChildWhichIsA("Part")
                     if targetPart then
-                        local randomOffset = Vector3.new(
-                            math.random(-1, 1),
-                            math.random(0, 2),
-                            math.random(-1, 1)
-                        )
-                        local finalPos = campfirePosition + randomOffset
-                        
-                        if item:IsA("Model") and item.PrimaryPart then
-                            item:SetPrimaryPartCFrame(CFrame.new(finalPos))
-                        else
-                            targetPart.Position = finalPos
-                        end
+                        local finalPos = campfirePosition + Vector3.new(math.random(-1, 1), math.random(0, 2), math.random(-1, 1))
+                        pcall(function()
+                            if item:IsA("Model") and item.PrimaryPart then
+                                item:SetPrimaryPartCFrame(CFrame.new(finalPos))
+                            else
+                                targetPart.Position = finalPos
+                            end
+                        end)
                     end
                     table.insert(batch, item)
                 end
             end
-            
-            for _, item in ipairs(batch) do
-                if item and item.Parent then
-                    startDrag(item)
-                end
-            end
-            
+            for _, item in ipairs(batch) do if item and item.Parent then startDrag(item) end end
             task.wait(bringDelay)
-            
-            for _, item in ipairs(batch) do
-                if item and item.Parent then
-                    stopDrag(item)
-                end
-            end
-            
+            for _, item in ipairs(batch) do if item and item.Parent then stopDrag(item) end end
             task.wait(0.02)
         end
-        
         isProcessing = false
     end)
 end
@@ -593,123 +353,67 @@ end
 local function bringItemsToGrinder(itemsToFind)
     if isProcessing then return end
     isProcessing = true
-    
     spawn(function()
         local itemsToProcess = {}
-        
         for _, item in ipairs(workspaceItems:GetChildren()) do
             if not item.Name:find("Chest") then
-                local shouldInclude = false
-                
                 for _, targetItem in ipairs(itemsToFind) do
-                    local itemNameLower = item.Name:lower()
-                    local targetLower = targetItem:lower()
-                    
-                    if itemNameLower:find(targetLower) or targetLower:find(itemNameLower) then
-                        shouldInclude = true
+                    if item.Name:lower():find(targetItem:lower()) or targetItem:lower():find(item.Name:lower()) then
+                        table.insert(itemsToProcess, item)
                         break
                     end
-                    
-                    if item.Name:find(targetItem) or targetItem:find(item.Name) then
-                        shouldInclude = true
-                        break
-                    end
-                end
-                
-                if shouldInclude then
-                    table.insert(itemsToProcess, item)
                 end
             end
         end
-        
         for i = 1, #itemsToProcess, maxItemsPerFrame do
             local batch = {}
             local currentGrindPos = grindPositions[((i-1) % #grindPositions) + 1]
-            
             for j = i, math.min(i + maxItemsPerFrame - 1, #itemsToProcess) do
                 local item = itemsToProcess[j]
                 if item and item.Parent then
-                    local targetPart
-                    for _, child in ipairs(item:GetDescendants()) do
-                        if child:IsA("MeshPart") or child:IsA("Part") then
-                            targetPart = child
-                            break
-                        end
-                    end
-                    
+                    local targetPart = item:FindFirstChildWhichIsA("MeshPart") or item:FindFirstChildWhichIsA("Part")
                     if targetPart then
-                        local randomOffset = Vector3.new(
-                            math.random(-1, 1) * 0.5,
-                            math.random(0, 2),
-                            math.random(-1, 1) * 0.5
-                        )
-                        local finalPos = currentGrindPos + randomOffset
-                        
-                        if item:IsA("Model") and item.PrimaryPart then
-                            item:SetPrimaryPartCFrame(CFrame.new(finalPos))
-                        else
-                            targetPart.Position = finalPos
-                        end
+                        local finalPos = currentGrindPos + Vector3.new(math.random(-1, 1) * 0.5, math.random(0, 2), math.random(-1, 1) * 0.5)
+                        pcall(function()
+                            if item:IsA("Model") and item.PrimaryPart then
+                                item:SetPrimaryPartCFrame(CFrame.new(finalPos))
+                            else
+                                targetPart.Position = finalPos
+                            end
+                        end)
                     end
                     table.insert(batch, item)
                 end
             end
-            
-            for _, item in ipairs(batch) do
-                if item and item.Parent then
-                    startDrag(item)
-                end
-            end
-            
+            for _, item in ipairs(batch) do if item and item.Parent then startDrag(item) end end
             task.wait(bringDelay)
-            
-            for _, item in ipairs(batch) do
-                if item and item.Parent then
-                    stopDrag(item)
-                end
-            end
-            
+            for _, item in ipairs(batch) do if item and item.Parent then stopDrag(item) end end
             task.wait(0.02)
         end
-        
         isProcessing = false
     end)
 end
 
 local function teleportToCampfire()
-    if hrp then
-        pcall(function()
-            hrp.CFrame = CFrame.new(campfirePosition + Vector3.new(0, 5, 0))
-        end)
-    end
+    if hrp then pcall(function() hrp.CFrame = CFrame.new(campfirePosition + Vector3.new(0, 5, 0)) end) end
 end
 
 local function openChest(chest)
-    if not autoOpenChestsEnabled then return end
-    if not chest or not chest:FindFirstChild("Main") then return end
-    
-    local chestPosition = chest.Main.Position
-    local playerPosition = hrp.Position
-    local distance = (chestPosition - playerPosition).Magnitude
-    
+    if not autoOpenChestsEnabled or not chest or not chest:FindFirstChild("Main") then return end
+    local distance = (chest.Main.Position - hrp.Position).Magnitude
     if distance > chestRange then return end
-    
     local proxAtt = chest.Main:FindFirstChild("ProximityAttachment")
     if proxAtt then
         for _, obj in ipairs(proxAtt:GetChildren()) do
-            if obj:IsA("ProximityPrompt") or obj.Name == "ProximityInteraction" then
-                pcall(function() fireproximityprompt(obj) end)
-            end
+            if obj:IsA("ProximityPrompt") then pcall(function() fireproximityprompt(obj) end) end
         end
     end
 end
 
 local function killAura()
     if not killAuraEnabled then return end
-    
     local characters = workspace:FindFirstChild("Characters")
     if not characters then return end
-    
     for _, enemy in pairs(characters:GetChildren()) do
         if enemy.Name ~= player.Name and enemy:FindFirstChild("HumanoidRootPart") then
             pcall(function()
@@ -717,13 +421,7 @@ local function killAura()
                 if inventory then
                     for _, weapon in pairs(inventory:GetChildren()) do
                         if weapon:IsA("Tool") or weapon.Name:find("Axe") or weapon.Name:find("Spear") or weapon.Name:find("Katana") or weapon.Name:find("Sword") then
-                            local args = {
-                                enemy,
-                                weapon,
-                                "11_5204135765",
-                                enemy:FindFirstChild("HumanoidRootPart").CFrame
-                            }
-                            ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("ToolDamageObject"):InvokeServer(unpack(args))
+                            ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("ToolDamageObject"):InvokeServer(enemy, weapon, "11_5204135765", enemy.HumanoidRootPart.CFrame)
                             break
                         end
                     end
@@ -734,104 +432,584 @@ local function killAura()
 end
 
 -- Auto plant loop
-spawn(function()
-    while true do
-        if autoPlantEnabled then
-            autoPlant()
-        end
-        wait(1)
-    end
-end)
+spawn(function() while true do if autoPlantEnabled then autoPlant() end wait(1) end end)
 
 -- Event connections
-workspaceItems.ChildAdded:Connect(function(item)
-    if item.Name:find("Chest") then
-        task.wait(0.1)
-        openChest(item)
-    end
-end)
-
-RunService.Heartbeat:Connect(function()
-    if killAuraEnabled then killAura() end
-end)
-
-player.CharacterAdded:Connect(function(character)
-    char = character
-    hrp = character:WaitForChild("HumanoidRootPart")
-end)
-
+workspaceItems.ChildAdded:Connect(function(item) if item.Name:find("Chest") then task.wait(0.1); openChest(item) end end)
+RunService.Heartbeat:Connect(function() if killAuraEnabled then killAura() end end)
+player.CharacterAdded:Connect(function(character) char = character; hrp = character:WaitForChild("HumanoidRootPart") end)
 antiAFK()
+for _, item in ipairs(workspaceItems:GetChildren()) do if item.Name:find("Chest") then openChest(item) end end
 
-for _, item in ipairs(workspaceItems:GetChildren()) do
-    if item.Name:find("Chest") then
-        openChest(item)
-    end
-end
+-- ========== CREATE UI ==========
 
--- ============================================
--- CREATE UI WITH FIXED LIBRARY - COMPLETE
--- ============================================
-
-Library:CreateWindow("99 Nights - Aux Hub")
+Library:CreateWindow("99 Nights - Complete V3")
 
 -- INFO TAB
 local InfoTab = Library:CreateTab("Info")
-
-InfoTab:CreateLabel("99 Nights in the Forest")
-InfoTab:CreateLabel("Beta Version")
-InfoTab:CreateLabel("Features: Farm Log, Auto Kid")
-InfoTab:CreateLabel("Finding, Items, Auto functions")
-InfoTab:CreateLabel("Movement utilities & more!")
+InfoTab:CreateLabel("99 Nights in the Forest V3")
+InfoTab:CreateLabel("Complete Edition with Dropdowns")
+InfoTab:CreateLabel("New Items: Fish, Trim Kits")
+InfoTab:CreateLabel("Fishing Rods, Potions & More!")
 InfoTab:CreateLabel("Credits: VantaXock, Polleser")
 
 -- SETTINGS TAB
 local SettingsTab = Library:CreateTab("Settings")
-
-SettingsTab:CreateLabel("Script Settings")
-
-SettingsTab:CreateSlider("Batch Delay", 0.05, 1, 0.1, function(value)
-    bringDelay = value
-end)
-
-SettingsTab:CreateSlider("Items Per Batch", 1, 10, 3, function(value)
-    maxItemsPerFrame = value
-end)
-
+SettingsTab:CreateLabel("Performance Settings")
+SettingsTab:CreateSlider("Batch Delay", 0.05, 1, 0.1, function(v) bringDelay = v end)
+SettingsTab:CreateSlider("Items Per Batch", 1, 10, 3, function(v) maxItemsPerFrame = v end)
 SettingsTab:CreateToggle("Anti-Lag", false, function(enabled)
-    if enabled then
-        settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
-        
-        for _, v in pairs(Lighting:GetDescendants()) do
-            if v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("ColorCorrectionEffect") or 
-               v:IsA("SunRaysEffect") or v:IsA("DepthOfFieldEffect") then
-                v.Enabled = false
-            end
-        end
-        
-        workspace.Terrain.Decoration = false
-        
-        Library:Notify("Anti-Lag", "Enabled! FPS improved.", 3)
+    settings().Rendering.QualityLevel = enabled and Enum.QualityLevel.Level01 or Enum.QualityLevel.Automatic
+    workspace.Terrain.Decoration = not enabled
+    Library:Notify("Anti-Lag", enabled and "Enabled!" or "Disabled", 2)
+end)
+SettingsTab:CreateSlider("FOV", 30, 120, 70, function(v) workspace.CurrentCamera.FieldOfView = v end)
+
+-- HELP KIDS TAB
+local HelpKidsTab = Library:CreateTab("Help Kids")
+HelpKidsTab:CreateLabel("Lost Child Finder System")
+HelpKidsTab:CreateButton("Find Lost Child", function()
+    local childPos = findSmartLostChild()
+    if childPos then
+        hrp.CFrame = CFrame.new(childPos + Vector3.new(0, 5, 0))
+        Library:Notify("Kid Finder", "Found child!", 2)
     else
-        settings().Rendering.QualityLevel = Enum.QualityLevel.Automatic
-        
-        for _, v in pairs(Lighting:GetDescendants()) do
-            if v:IsA("BloomEffect") or v:IsA("BlurEffect") or v:IsA("ColorCorrectionEffect") or 
-               v:IsA("SunRaysEffect") or v:IsA("DepthOfFieldEffect") then
-                v.Enabled = true
-            end
+        Library:Notify("Kid Finder", "No new kids!", 2)
+    end
+end)
+HelpKidsTab:CreateButton("Reset Rescued List", function() rescuedKids = {}; Library:Notify("Reset", "List cleared!", 2) end)
+
+-- BRING TAB WITH DROPDOWN
+local BringTab = Library:CreateTab("Bring")
+BringTab:CreateLabel("Item Bringing System")
+BringTab:CreateButton("Bring All Items", function() bringItemsToPlayer({}) end)
+
+-- Combine all items for dropdown
+local allItemsList = {}
+for _, t in ipairs({allFoodItems, fishItems, toolsItems, meleeWeapons, rangedWeapons, armorItems, materialsItems, seedItems, flashlightItems, fishingRods, trimKits, tamingFlutes}) do
+    for _, item in ipairs(t) do
+        if not table.find(allItemsList, item) then
+            table.insert(allItemsList, item)
         end
-        
-        workspace.Terrain.Decoration = true
-        
-        Library:Notify("Anti-Lag", "Disabled. Normal quality.", 3)
+    end
+end
+
+BringTab:CreateDropdown("Select Items to Bring", allItemsList, function(selected)
+    selectedBringItems = selected
+end)
+
+BringTab:CreateToggle("Auto Bring Selected", false, function(enabled)
+    autoBringEnabled = enabled
+    if enabled then
+        spawn(function()
+            while autoBringEnabled do
+                if not isProcessing and #selectedBringItems > 0 then
+                    bringItemsToPlayer(selectedBringItems)
+                end
+                wait(3)
+            end
+        end)
     end
 end)
 
-SettingsTab:CreateToggle("Show Coordinates", false, function(enabled)
+-- Quick category buttons
+BringTab:CreateLabel("--- Quick Categories ---")
+BringTab:CreateButton("Bring All Food", function() bringItemsToPlayer(allFoodItems) end)
+BringTab:CreateButton("Bring All Fish", function() bringItemsToPlayer(fishItems) end)
+BringTab:CreateButton("Bring All Weapons", function()
+    local weapons = {}
+    for _, w in ipairs(meleeWeapons) do table.insert(weapons, w) end
+    for _, w in ipairs(rangedWeapons) do table.insert(weapons, w) end
+    bringItemsToPlayer(weapons)
+end)
+BringTab:CreateButton("Bring All Tools", function() bringItemsToPlayer(toolsItems) end)
+BringTab:CreateButton("Bring All Armor", function() bringItemsToPlayer(armorItems) end)
+BringTab:CreateButton("Bring Fishing Rods", function() bringItemsToPlayer(fishingRods) end)
+BringTab:CreateButton("Bring Trim Kits", function() bringItemsToPlayer(trimKits) end)
+BringTab:CreateButton("Bring Taming Flutes", function() bringItemsToPlayer(tamingFlutes) end)
+
+-- GRINDER TAB WITH DROPDOWN
+local GrinderTab = Library:CreateTab("Grinder")
+GrinderTab:CreateLabel("Auto Grinder System")
+GrinderTab:CreateButton("Grind All Materials", function() bringItemsToGrinder(grindableItems) end)
+
+GrinderTab:CreateDropdown("Select Items to Grind", grindableItems, function(selected)
+    selectedGrindItems = selected
+end)
+
+GrinderTab:CreateToggle("Auto Grind Selected", false, function(enabled)
+    autoGrindersEnabled = enabled
+    if enabled then
+        spawn(function()
+            while autoGrindersEnabled do
+                if not isProcessing and #selectedGrindItems > 0 then
+                    bringItemsToGrinder(selectedGrindItems)
+                end
+                wait(4)
+            end
+        end)
+    end
+end)
+
+-- CAMPFIRE TAB WITH DROPDOWN
+local CampfireTab = Library:CreateTab("Campfire")
+CampfireTab:CreateLabel("Campfire Management")
+CampfireTab:CreateButton("Teleport to Campfire", teleportToCampfire)
+CampfireTab:CreateButton("Bring All Fuel", function() bringItemsToCampfire(fuelItems) end)
+
+CampfireTab:CreateDropdown("Select Fuel Items", fuelItems, function(selected)
+    selectedCampfireItems = selected
+end)
+
+CampfireTab:CreateToggle("Auto Fuel Selected", false, function(enabled)
+    autoCampfireEnabled = enabled
+    if enabled then
+        spawn(function()
+            while autoCampfireEnabled do
+                if not isProcessing and #selectedCampfireItems > 0 then
+                    bringItemsToCampfire(selectedCampfireItems)
+                end
+                wait(3)
+            end
+        end)
+    end
+end)
+
+-- COOK TAB WITH DROPDOWN
+local CookTab = Library:CreateTab("Cook")
+CookTab:CreateLabel("Cooking System")
+CookTab:CreateButton("Bring All Cookable", function() bringItemsToCampfire(cookableFoods) end)
+
+CookTab:CreateDropdown("Select Foods to Cook", cookableFoods, function(selected)
+    selectedCookItems = selected
+end)
+
+CookTab:CreateToggle("Auto Cook Selected", false, function(enabled)
+    autoCookFoodEnabled = enabled
+    if enabled then
+        spawn(function()
+            while autoCookFoodEnabled do
+                if not isProcessing and #selectedCookItems > 0 then
+                    bringItemsToCampfire(selectedCookItems)
+                end
+                wait(3)
+            end
+        end)
+    end
+end)
+
+-- POTION TAB
+local PotionTab = Library:CreateTab("Potions")
+PotionTab:CreateLabel("Potion Brewing System")
+PotionTab:CreateLabel("Bring ingredients to Cauldron!")
+PotionTab:CreateButton("Bring All Ingredients", function() bringItemsToPlayer(potionIngredients) end)
+PotionTab:CreateLabel("--- Individual Ingredients ---")
+for _, ingredient in ipairs(potionIngredients) do
+    PotionTab:CreateButton(ingredient, function()
+        if not isProcessing then bringItemsToPlayer({ingredient}) end
+    end)
+end
+
+-- FISH TAB
+local FishTab = Library:CreateTab("Fish")
+FishTab:CreateLabel("Fishing Items & Fish")
+FishTab:CreateButton("Bring All Fish", function() bringItemsToPlayer(fishItems) end)
+FishTab:CreateButton("Bring All Fishing Rods", function() bringItemsToPlayer(fishingRods) end)
+FishTab:CreateLabel("--- Individual Fish ---")
+for _, fish in ipairs(fishItems) do
+    FishTab:CreateButton(fish, function()
+        if not isProcessing then bringItemsToPlayer({fish}) end
+    end)
+end
+
+-- MAIN TAB
+local MainTab = Library:CreateTab("Main")
+MainTab:CreateLabel("Core Features")
+MainTab:CreateButton("Farm Log 20 Seconds", farmLog20Seconds)
+MainTab:CreateSlider("Walk Speed", 16, 100, 16, function(v)
+    originalWalkSpeed = v
+    if char:FindFirstChild("Humanoid") then char.Humanoid.WalkSpeed = v end
+end)
+MainTab:CreateSlider("Jump Power", 50, 200, 50, function(v)
+    originalJumpPower = v
+    if char:FindFirstChild("Humanoi-- 99 NIGHTS V3 - PART 2 (CONTINUATION)
+-- Merge this after Part 1 where it stopped at Jump Power slider
+
+d") then char.Humanoid.JumpPower = v end
+end)
+MainTab:CreateToggle("Remove Fog", false, function(enabled)
+    Lighting.FogEnd = enabled and 100000 or originalFogEnd
+end)
+MainTab:CreateToggle("Fullbright", false, function(enabled)
+    Lighting.Brightness = enabled and 10 or 1
+    Lighting.GlobalShadows = not enabled
+end)
+MainTab:CreateToggle("Auto Plant", false, function(enabled)
+    autoPlantEnabled = enabled
+end)
+MainTab:CreateToggle("Kill Aura (OP!)", false, function(enabled)
+    killAuraEnabled = enabled
+end)
+MainTab:CreateToggle("Auto Open Chests", true, function(enabled)
+    autoOpenChestsEnabled = enabled
+end)
+MainTab:CreateSlider("Chest Range", 1, 1000, 50, function(v)
+    chestRange = v
+end)
+
+-- CULTIST TAB
+local CultistTab = Library:CreateTab("Cultist")
+CultistTab:CreateLabel("Cultist Items & Entities")
+CultistTab:CreateButton("Bring All Cultist Items", function()
+    bringItemsToPlayer(cultistItems)
+end)
+CultistTab:CreateLabel("--- Individual Cultist Items ---")
+for _, cultistItem in ipairs(cultistItems) do
+    CultistTab:CreateButton(cultistItem, function()
+        if not isProcessing then
+            bringItemsToPlayer({cultistItem})
+        end
+    end)
+end
+
+-- WEAPONS TAB
+local WeaponsTab = Library:CreateTab("Weapons")
+WeaponsTab:CreateLabel("All Weapons & Ammo")
+
+WeaponsTab:CreateButton("Bring All Weapons", function()
+    local allWeapons = {}
+    for _, w in ipairs(meleeWeapons) do table.insert(allWeapons, w) end
+    for _, w in ipairs(rangedWeapons) do table.insert(allWeapons, w) end
+    bringItemsToPlayer(allWeapons)
+end)
+
+WeaponsTab:CreateButton("Bring All Ammo", function()
+    bringItemsToPlayer(ammoItems)
+end)
+
+WeaponsTab:CreateLabel("--- Melee Weapons ---")
+for _, melee in ipairs(meleeWeapons) do
+    WeaponsTab:CreateButton(melee, function()
+        if not isProcessing then bringItemsToPlayer({melee}) end
+    end)
+end
+
+WeaponsTab:CreateLabel("--- Ranged Weapons ---")
+for _, ranged in ipairs(rangedWeapons) do
+    WeaponsTab:CreateButton(ranged, function()
+        if not isProcessing then bringItemsToPlayer({ranged}) end
+    end)
+end
+
+WeaponsTab:CreateLabel("--- Ammunition ---")
+for _, ammo in ipairs(ammoItems) do
+    WeaponsTab:CreateButton(ammo, function()
+        if not isProcessing then bringItemsToPlayer({ammo}) end
+    end)
+end
+
+-- ARMOR TAB
+local ArmorTab = Library:CreateTab("Armor")
+ArmorTab:CreateLabel("Armor & Protection")
+ArmorTab:CreateButton("Bring All Armor", function()
+    bringItemsToPlayer(armorItems)
+end)
+
+ArmorTab:CreateButton("Bring All Trim Kits", function()
+    bringItemsToPlayer(trimKits)
+end)
+
+ArmorTab:CreateButton("Bring All Warm Clothing", function()
+    bringItemsToPlayer(warmClothing)
+end)
+
+ArmorTab:CreateLabel("--- Armor Sets ---")
+for _, armor in ipairs(armorItems) do
+    ArmorTab:CreateButton(armor, function()
+        if not isProcessing then bringItemsToPlayer({armor}) end
+    end)
+end
+
+ArmorTab:CreateLabel("--- Trim Kits ---")
+for _, trim in ipairs(trimKits) do
+    ArmorTab:CreateButton(trim, function()
+        if not isProcessing then bringItemsToPlayer({trim}) end
+    end)
+end
+
+ArmorTab:CreateLabel("--- Warm Clothing ---")
+for _, clothing in ipairs(warmClothing) do
+    ArmorTab:CreateButton(clothing, function()
+        if not isProcessing then bringItemsToPlayer({clothing}) end
+    end)
+end
+
+-- TOOLS TAB
+local ToolsTab = Library:CreateTab("Tools")
+ToolsTab:CreateLabel("All Tools & Equipment")
+ToolsTab:CreateButton("Bring All Tools", function()
+    bringItemsToPlayer(toolsItems)
+end)
+
+ToolsTab:CreateButton("Bring All Flashlights", function()
+    bringItemsToPlayer(flashlightItems)
+end)
+
+ToolsTab:CreateButton("Bring All Fishing Rods", function()
+    bringItemsToPlayer(fishingRods)
+end)
+
+ToolsTab:CreateButton("Bring All Taming Flutes", function()
+    bringItemsToPlayer(tamingFlutes)
+end)
+
+ToolsTab:CreateLabel("--- Tools ---")
+for _, tool in ipairs(toolsItems) do
+    ToolsTab:CreateButton(tool, function()
+        if not isProcessing then bringItemsToPlayer({tool}) end
+    end)
+end
+
+ToolsTab:CreateLabel("--- Flashlights ---")
+for _, flashlight in ipairs(flashlightItems) do
+    ToolsTab:CreateButton(flashlight, function()
+        if not isProcessing then bringItemsToPlayer({flashlight}) end
+    end)
+end
+
+ToolsTab:CreateLabel("--- Fishing Rods ---")
+for _, rod in ipairs(fishingRods) do
+    ToolsTab:CreateButton(rod, function()
+        if not isProcessing then bringItemsToPlayer({rod}) end
+    end)
+end
+
+ToolsTab:CreateLabel("--- Taming Flutes ---")
+for _, flute in ipairs(tamingFlutes) do
+    ToolsTab:CreateButton(flute, function()
+        if not isProcessing then bringItemsToPlayer({flute}) end
+    end)
+end
+
+-- MATERIALS TAB
+local MaterialsTab = Library:CreateTab("Materials")
+MaterialsTab:CreateLabel("Crafting Materials & Scrap")
+MaterialsTab:CreateButton("Bring All Materials", function()
+    bringItemsToPlayer(materialsItems)
+end)
+
+MaterialsTab:CreateButton("Bring All Animal Parts", function()
+    bringItemsToPlayer(animalParts)
+end)
+
+MaterialsTab:CreateLabel("--- Materials & Scrap ---")
+for _, material in ipairs(materialsItems) do
+    MaterialsTab:CreateButton(material, function()
+        if not isProcessing then bringItemsToPlayer({material}) end
+    end)
+end
+
+MaterialsTab:CreateLabel("--- Animal Parts ---")
+for _, animalPart in ipairs(animalParts) do
+    MaterialsTab:CreateButton(animalPart, function()
+        if not isProcessing then bringItemsToPlayer({animalPart}) end
+    end)
+end
+
+-- SEEDS TAB
+local SeedsTab = Library:CreateTab("Seeds")
+SeedsTab:CreateLabel("Seed Packs & Farming")
+SeedsTab:CreateButton("Bring All Seeds", function()
+    bringItemsToPlayer(seedItems)
+end)
+
+SeedsTab:CreateLabel("--- Seed Packs ---")
+for _, seed in ipairs(seedItems) do
+    SeedsTab:CreateButton(seed, function()
+        if not isProcessing then bringItemsToPlayer({seed}) end
+    end)
+end
+
+-- MEDICAL TAB
+local MedicalTab = Library:CreateTab("Medical")
+MedicalTab:CreateLabel("Medical Items & Potions")
+MedicalTab:CreateButton("Bring All Medical", function()
+    bringItemsToPlayer(medicalItems)
+end)
+
+MedicalTab:CreateLabel("--- Medical Items ---")
+for _, med in ipairs(medicalItems) do
+    MedicalTab:CreateButton(med, function()
+        if not isProcessing then bringItemsToPlayer({med}) end
+    end)
+end
+
+-- CONTAINERS TAB
+local ContainersTab = Library:CreateTab("Containers")
+ContainersTab:CreateLabel("Storage & Containers")
+ContainersTab:CreateButton("Bring All Containers", function()
+    bringItemsToPlayer(containerItems)
+end)
+
+ContainersTab:CreateLabel("--- Containers ---")
+for _, container in ipairs(containerItems) do
+    ContainersTab:CreateButton(container, function()
+        if not isProcessing then bringItemsToPlayer({container}) end
+    end)
+end
+
+-- FURNITURE TAB
+local FurnitureTab = Library:CreateTab("Furniture")
+FurnitureTab:CreateLabel("Furniture & Base Items")
+FurnitureTab:CreateButton("Bring All Furniture", function()
+    bringItemsToPlayer(furnitureItems)
+end)
+
+FurnitureTab:CreateLabel("--- Furniture Items ---")
+for _, furniture in ipairs(furnitureItems) do
+    FurnitureTab:CreateButton(furniture, function()
+        if not isProcessing then bringItemsToPlayer({furniture}) end
+    end)
+end
+
+-- SPECIAL ITEMS TAB
+local SpecialTab = Library:CreateTab("Special")
+SpecialTab:CreateLabel("Special & Unique Items")
+SpecialTab:CreateButton("Bring All Special Items", function()
+    bringItemsToPlayer(specialItems)
+end)
+
+SpecialTab:CreateLabel("--- Special Items ---")
+for _, special in ipairs(specialItems) do
+    SpecialTab:CreateButton(special, function()
+        if not isProcessing then bringItemsToPlayer({special}) end
+    end)
+end
+
+-- FOOD TAB (COMPLETE)
+local FoodTab = Library:CreateTab("Food")
+FoodTab:CreateLabel("All Food Items")
+FoodTab:CreateButton("Bring All Food", function()
+    bringItemsToPlayer(allFoodItems)
+end)
+
+FoodTab:CreateToggle("Auto Bring All Food", false, function(enabled)
+    if enabled then
+        spawn(function()
+            while enabled do
+                if not isProcessing then
+                    bringItemsToPlayer(allFoodItems)
+                end
+                wait(3)
+            end
+        end)
+    end
+end)
+
+FoodTab:CreateLabel("--- Individual Food Items ---")
+for _, food in ipairs(allFoodItems) do
+    FoodTab:CreateButton(food, function()
+        if not isProcessing then bringItemsToPlayer({food}) end
+    end)
+end
+
+-- TELEPORT TAB
+local TeleportTab = Library:CreateTab("Teleport")
+TeleportTab:CreateLabel("Teleportation System")
+
+TeleportTab:CreateButton("Teleport to Campfire", function()
+    teleportToCampfire()
+end)
+
+TeleportTab:CreateButton("Teleport to Random Player", function()
+    local players = Players:GetPlayers()
+    if #players > 1 then
+        local randomPlayer = players[math.random(1, #players)]
+        if randomPlayer ~= player and randomPlayer.Character and randomPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            hrp.CFrame = randomPlayer.Character.HumanoidRootPart.CFrame
+            Library:Notify("Teleport", "Teleported to " .. randomPlayer.Name, 2)
+        end
+    end
+end)
+
+TeleportTab:CreateTextbox("X Position", "Enter X coordinate", function(text)
+    local x = tonumber(text)
+    if x and hrp then
+        local pos = hrp.Position
+        hrp.CFrame = CFrame.new(x, pos.Y, pos.Z)
+        Library:Notify("Teleport", "Moved to X: " .. x, 2)
+    end
+end)
+
+TeleportTab:CreateTextbox("Y Position", "Enter Y coordinate", function(text)
+    local y = tonumber(text)
+    if y and hrp then
+        local pos = hrp.Position
+        hrp.CFrame = CFrame.new(pos.X, y, pos.Z)
+        Library:Notify("Teleport", "Moved to Y: " .. y, 2)
+    end
+end)
+
+TeleportTab:CreateTextbox("Z Position", "Enter Z coordinate", function(text)
+    local z = tonumber(text)
+    if z and hrp then
+        local pos = hrp.Position
+        hrp.CFrame = CFrame.new(pos.X, pos.Y, z)
+        Library:Notify("Teleport", "Moved to Z: " .. z, 2)
+    end
+end)
+
+-- MISC TAB
+local MiscTab = Library:CreateTab("Misc")
+MiscTab:CreateLabel("Miscellaneous Features")
+
+MiscTab:CreateToggle("Infinite Jump", false, function(enabled)
+    if enabled then
+        local connection
+        connection = game:GetService("UserInputService").JumpRequest:Connect(function()
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end)
+        Library:Notify("Infinite Jump", "Enabled!", 2)
+    end
+end)
+
+MiscTab:CreateToggle("No Clip", false, function(enabled)
+    local noClipEnabled = enabled
+    if enabled then
+        spawn(function()
+            while noClipEnabled do
+                if char then
+                    for _, part in pairs(char:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+                wait(0.1)
+            end
+        end)
+        Library:Notify("No Clip", "Enabled!", 2)
+    end
+end)
+
+MiscTab:CreateButton("Reset Character", function()
+    if char and char:FindFirstChild("Humanoid") then
+        char.Humanoid.Health = 0
+        Library:Notify("Reset", "Character reset!", 2)
+    end
+end)
+
+MiscTab:CreateSlider("Time of Day", 0, 24, 12, function(value)
+    Lighting.ClockTime = value
+end)
+
+MiscTab:CreateToggle("Show Coordinates", false, function(enabled)
     showCoordinates = enabled
     if enabled then
         if coordinatesGui then coordinatesGui:Destroy() end
-
+        
         coordinatesGui = Instance.new("ScreenGui")
         coordinatesGui.Name = "CoordinatesGui"
         coordinatesGui.ResetOnSpawn = false
@@ -877,11 +1055,11 @@ SettingsTab:CreateToggle("Show Coordinates", false, function(enabled)
     end
 end)
 
-SettingsTab:CreateToggle("ESP Teammates", false, function(enabled)
+MiscTab:CreateToggle("ESP Teammates", false, function(enabled)
     espEnabled = enabled
     if enabled then
         if espFolder then espFolder:Destroy() end
-
+        
         espFolder = Instance.new("Folder")
         espFolder.Name = "ESPFolder"
         espFolder.Parent = game.CoreGui
@@ -953,387 +1131,15 @@ SettingsTab:CreateToggle("ESP Teammates", false, function(enabled)
     end
 end)
 
-SettingsTab:CreateSlider("FOV", 30, 120, 70, function(value)
-    currentFOV = value
-    local camera = workspace.CurrentCamera
-    if camera then
-        camera.FieldOfView = value
-    end
+MiscTab:CreateButton("Rejoin Server", function()
+    game:GetService("TeleportService"):Teleport(game.PlaceId, player)
 end)
 
-SettingsTab:CreateButton("Refresh Character", function()
-    char = player.Character or player.CharacterAdded:Wait()
-    hrp = char:WaitForChild("HumanoidRootPart")
-    
-    if char:FindFirstChild("Humanoid") then
-        char.Humanoid.WalkSpeed = originalWalkSpeed
-        char.Humanoid.JumpPower = originalJumpPower
-    end
-    
-    Library:Notify("Settings", "Character refreshed!", 2)
+MiscTab:CreateButton("Copy Discord (if any)", function()
+    setclipboard("VantaXock#0000")
+    Library:Notify("Copied", "Discord copied!", 2)
 end)
 
--- HELP KIDS TAB
-local HelpKidsTab = Library:CreateTab("Help Kids")
-
-HelpKidsTab:CreateLabel("Lost Child Finder")
-HelpKidsTab:CreateLabel("Auto find Dino Kid, Koala kid")
-
-HelpKidsTab:CreateButton("Find Lost Child", function()
-    local childPos = findSmartLostChild()
-    if childPos then
-        hrp.CFrame = CFrame.new(childPos + Vector3.new(0, 5, 0))
-        Library:Notify("Kid Finder", "Found and teleported!", 3)
-    else
-        Library:Notify("Kid Finder", "No new kids found!", 3)
-    end
-end)
-
-HelpKidsTab:CreateButton("Reset Rescued Kids", function()
-    rescuedKids = {}
-    Library:Notify("Kid Finder", "List cleared!", 2)
-end)
-
--- CULTIST TAB
-local CultistTab = Library:CreateTab("Cultist")
-
-CultistTab:CreateLabel("Cultist Items")
-CultistTab:CreateLabel("Bring cultist-related items")
-
-CultistTab:CreateButton("Bring All Cultist Items", function()
-    bringItemsToPlayer(cultistItems)
-end)
-
-for _, cultistItem in ipairs(cultistItems) do
-    CultistTab:CreateButton(cultistItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({cultistItem})
-    end)
-end
-
--- BRING TAB
-local BringTab = Library:CreateTab("Bring")
-
-BringTab:CreateLabel("Item Bringing System")
-
-BringTab:CreateButton("Bring All Items", function()
-    bringItemsToPlayer({})
-end)
-
-BringTab:CreateToggle("Auto Bring All", false, function(enabled)
-    autoBringEnabled = enabled
-    if enabled then
-        spawn(function()
-            while autoBringEnabled do
-                if not isProcessing then
-                    bringItemsToPlayer({})
-                end
-                wait(3)
-            end
-        end)
-    end
-end)
-
--- FOOD ITEMS
-BringTab:CreateLabel("--- Food Items ---")
-for _, foodItem in ipairs(allFoodItems) do
-    BringTab:CreateButton(foodItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({foodItem})
-    end)
-end
-
--- SEEDS
-BringTab:CreateLabel("--- Seeds ---")
-for _, seedItem in ipairs(seedItems) do
-    BringTab:CreateButton(seedItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({seedItem})
-    end)
-end
-
--- FLASHLIGHTS
-BringTab:CreateLabel("--- Flashlights ---")
-for _, flashItem in ipairs(flashlightItems) do
-    BringTab:CreateButton(flashItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({flashItem})
-    end)
-end
-
--- TOOLS
-BringTab:CreateLabel("--- Tools & Sacks ---")
-for _, toolItem in ipairs(toolsItems) do
-    BringTab:CreateButton(toolItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({toolItem})
-    end)
-end
-
--- MELEE WEAPONS
-BringTab:CreateLabel("--- Melee Weapons ---")
-for _, meleeItem in ipairs(meleeWeapons) do
-    BringTab:CreateButton(meleeItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({meleeItem})
-    end)
-end
-
--- RANGED WEAPONS
-BringTab:CreateLabel("--- Ranged Weapons ---")
-for _, rangedItem in ipairs(rangedWeapons) do
-    BringTab:CreateButton(rangedItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({rangedItem})
-    end)
-end
-
--- AMMO
-BringTab:CreateLabel("--- Ammunition ---")
-for _, ammoItem in ipairs(ammoItems) do
-    BringTab:CreateButton(ammoItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({ammoItem})
-    end)
-end
-
--- ARMOR
-BringTab:CreateLabel("--- Armor & Protection ---")
-for _, armorItem in ipairs(armorItems) do
-    BringTab:CreateButton(armorItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({armorItem})
-    end)
-end
-
--- CORPSES & FUEL
-BringTab:CreateLabel("--- Corpses & Fuel ---")
-for _, corpseItem in ipairs(corpseFuelItems) do
-    BringTab:CreateButton(corpseItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({corpseItem})
-    end)
-end
-
--- MATERIALS
-BringTab:CreateLabel("--- Materials & Scrap ---")
-for _, materialItem in ipairs(materialsItems) do
-    BringTab:CreateButton(materialItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({materialItem})
-    end)
-end
-
--- ANIMAL PARTS
-BringTab:CreateLabel("--- Animal Parts ---")
-for _, animalItem in ipairs(animalParts) do
-    BringTab:CreateButton(animalItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({animalItem})
-    end)
-end
-
--- MEDICAL
-BringTab:CreateLabel("--- Medical Items ---")
-for _, medItem in ipairs(medicalItems) do
-    BringTab:CreateButton(medItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({medItem})
-    end)
-end
-
--- CONTAINERS
-BringTab:CreateLabel("--- Containers ---")
-for _, containerItem in ipairs(containerItems) do
-    BringTab:CreateButton(containerItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({containerItem})
-    end)
-end
-
--- GRINDER TAB
-local GrinderTab = Library:CreateTab("Grinder")
-
-GrinderTab:CreateLabel("Auto Grinders System")
-
-GrinderTab:CreateButton("Grind All Materials", function()
-    autoGrindersEnabled = false
-    bringItemsToGrinder(grindableItems)
-end)
-
-GrinderTab:CreateToggle("Auto Grind All", false, function(enabled)
-    autoGrindersEnabled = enabled
-    if enabled then
-        spawn(function()
-            while autoGrindersEnabled do
-                if not isProcessing then
-                    bringItemsToGrinder(grindableItems)
-                end
-                wait(4)
-            end
-        end)
-    end
-end)
-
-GrinderTab:CreateLabel("--- Grindable Materials ---")
-for _, grindItem in ipairs(grindableItems) do
-    GrinderTab:CreateButton(grindItem, function()
-        if isProcessing then return end
-        bringItemsToGrinder({grindItem})
-    end)
-end
-
--- CAMPFIRE TAB
-local CampfireTab = Library:CreateTab("Campfire")
-
-CampfireTab:CreateLabel("Campfire Management")
-
-CampfireTab:CreateButton("Teleport to Campfire", teleportToCampfire)
-
-CampfireTab:CreateButton("Bring All Fuel", function()
-    autoCampfireEnabled = false
-    bringItemsToCampfire(fuelItems)
-end)
-
-CampfireTab:CreateToggle("Auto Fuel Campfire", false, function(enabled)
-    autoCampfireEnabled = enabled
-    if enabled then
-        spawn(function()
-            while autoCampfireEnabled do
-                if not isProcessing then
-                    bringItemsToCampfire(fuelItems)
-                end
-                wait(3)
-            end
-        end)
-    end
-end)
-
-CampfireTab:CreateLabel("--- Fuel Items ---")
-for _, fuelItem in ipairs(fuelItems) do
-    CampfireTab:CreateButton(fuelItem, function()
-        if isProcessing then return end
-        bringItemsToCampfire({fuelItem})
-    end)
-end
-
--- COOK TAB
-local CookTab = Library:CreateTab("Cook")
-
-CookTab:CreateLabel("Cooking System")
-
-CookTab:CreateButton("Bring All Cookable", function()
-    bringItemsToCampfire(cookableFoods)
-end)
-
-CookTab:CreateToggle("Auto Cook", false, function(enabled)
-    if enabled then
-        spawn(function()
-            while enabled do
-                if not isProcessing then
-                    bringItemsToCampfire(cookableFoods)
-                end
-                wait(3)
-            end
-        end)
-    end
-end)
-
-CookTab:CreateLabel("--- Cookable Foods ---")
-for _, cookItem in ipairs(cookableFoods) do
-    CookTab:CreateButton(cookItem, function()
-        if isProcessing then return end
-        bringItemsToCampfire({cookItem})
-    end)
-end
-
--- BRING FOODS TAB
-local BringFoodsTab = Library:CreateTab("Bring Foods")
-
-BringFoodsTab:CreateLabel("Food Items")
-
-BringFoodsTab:CreateButton("Bring All Food Items", function()
-    bringItemsToPlayer(allFoodItems)
-end)
-
-BringFoodsTab:CreateToggle("Auto Bring All Foods", false, function(enabled)
-    if enabled then
-        spawn(function()
-            while enabled do
-                if not isProcessing then
-                    bringItemsToPlayer(allFoodItems)
-                end
-                wait(3)
-            end
-        end)
-    end
-end)
-
-BringFoodsTab:CreateLabel("--- Individual Foods ---")
-for _, foodItem in ipairs(allFoodItems) do
-    BringFoodsTab:CreateButton(foodItem, function()
-        if isProcessing then return end
-        bringItemsToPlayer({foodItem})
-    end)
-end
-
--- MAIN TAB (LAST)
-local MainTab = Library:CreateTab("Main")
-
-MainTab:CreateLabel("99 Nights Forest - Aux Hub")
-MainTab:CreateLabel("Welcome!")
-
-MainTab:CreateButton("Farm Log 20 Seconds", farmLog20Seconds)
-
-MainTab:CreateButton("Out Build (Development)", outBuild)
-
-MainTab:CreateSlider("Walk Speed", 16, 100, 16, function(value)
-    originalWalkSpeed = value
-    if char and char:FindFirstChild("Humanoid") then
-        char.Humanoid.WalkSpeed = value
-    end
-end)
-
-MainTab:CreateSlider("Jump Power", 50, 200, 50, function(value)
-    originalJumpPower = value
-    if char and char:FindFirstChild("Humanoid") then
-        char.Humanoid.JumpPower = value
-    end
-end)
-
-MainTab:CreateToggle("Remove Fog", false, function(enabled)
-    if enabled then
-        Lighting.FogEnd = 100000
-    else
-        Lighting.FogEnd = originalFogEnd
-    end
-end)
-
-MainTab:CreateToggle("Fullbright", false, function(enabled)
-    if enabled then
-        Lighting.Brightness = 10
-        Lighting.GlobalShadows = false
-    else
-        Lighting.Brightness = 1
-        Lighting.GlobalShadows = true
-    end
-end)
-
-MainTab:CreateToggle("Auto Plant (Dev)", false, function(enabled)
-    autoPlantEnabled = enabled
-end)
-
-MainTab:CreateToggle("Kill Aura (OP!)", false, function(enabled)
-    killAuraEnabled = enabled
-end)
-
-MainTab:CreateToggle("Auto Open Chests", true, function(enabled)
-    autoOpenChestsEnabled = enabled
-end)
-
-MainTab:CreateSlider("Chest Range", 1, 1000, 50, function(value)
-    chestRange = value
-end)
-
--- Success notification
-Library:Notify("99 Nights", "Script loaded by VantaXock!", 3)
+-- Final Success Notification
+Library:Notify("99 Nights V3", "Welcome", 4)
+Library:Notify("Welcome", "Made by Shizo", 3)
