@@ -1,6 +1,6 @@
 -- 99 Nights in the Forest Script - COMPLETE CONVERSION
 -- Load the FIXED library (use your merged Part 1 + Part 2 code)
-local Library = loadstring(game:HttpGet("YOUR_FIXED_LIBRARY_URL_HERE"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/99%20Nights%20Stuff/Library.lua"))()
 
 -- Services and variables
 local Players = game:GetService("Players")
