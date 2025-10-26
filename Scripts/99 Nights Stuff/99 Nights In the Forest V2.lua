@@ -794,10 +794,7 @@ SettingsTab:CreateSlider("Batch Delay", 0.05, 1, 0.1, function(value)
 end)
 
 SettingsTab:CreateSlider("Items Per Batch", 1, 10, 3, function(value)
-    maxItemsPer-- PART 2 - Continue from Settings Tab
--- Merge this after Part 1
-
-Frame = value
+    maxItemsPerFrame = value
 end)
 
 SettingsTab:CreateToggle("Anti-Lag", false, function(enabled)
