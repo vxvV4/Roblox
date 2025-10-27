@@ -632,10 +632,7 @@ MainTab:CreateSlider("Walk Speed", 16, 100, 16, function(v)
 end)
 MainTab:CreateSlider("Jump Power", 50, 200, 50, function(v)
     originalJumpPower = v
-    if char:FindFirstChild("Humanoi-- 99 NIGHTS V3 - PART 2 (CONTINUATION)
--- Merge this after Part 1 where it stopped at Jump Power slider
-
-d") then char.Humanoid.JumpPower = v end
+    if char:FindFirstChild("Humanoid")
 end)
 MainTab:CreateToggle("Remove Fog", false, function(enabled)
     Lighting.FogEnd = enabled and 100000 or originalFogEnd
