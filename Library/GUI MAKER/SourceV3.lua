@@ -212,7 +212,7 @@ Btn("Change Theme", function()
     
     -- Recreate GUI with new theme
     G:Destroy()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Library/GUI%20MAKER/ThemeZ%20for%20SourceV2.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Library/GUI%20MAKER/SourceV3.lua"))()
 end)
 
 Par("Current Theme: " .. ThemeZ.CurrentTheme.Name)
