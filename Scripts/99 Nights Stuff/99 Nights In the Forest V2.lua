@@ -1,4 +1,3 @@
--- 99 Nights in the Forest - COMPLETE V3 with Dropdowns & NEW Items
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/vxvV4/Roblox/refs/heads/main/Scripts/99%20Nights%20Stuff/Library.lua"))()
 
 -- Services
@@ -632,7 +631,7 @@ MainTab:CreateSlider("Walk Speed", 16, 100, 16, function(v)
 end)
 MainTab:CreateSlider("Jump Power", 50, 200, 50, function(v)
     originalJumpPower = v
-    if char:FindFirstChild("Humanoid")
+    if char:FindFirstChild("Humanoid") then char.Humanoid.JumpPower = v end
 end)
 MainTab:CreateToggle("Remove Fog", false, function(enabled)
     Lighting.FogEnd = enabled and 100000 or originalFogEnd
@@ -1005,7 +1004,8 @@ end)
 MiscTab:CreateToggle("Show Coordinates", false, function(enabled)
     showCoordinates = enabled
     if enabled then
-        if coordinatesGui then coordinatesGui:Destroy() end
+        if coordinatesGui then coordinatesGui:Destroy() 
+end
         
         coordinatesGui = Instance.new("ScreenGui")
         coordinatesGui.Name = "CoordinatesGui"
@@ -1132,7 +1132,7 @@ MiscTab:CreateButton("Rejoin Server", function()
     game:GetService("TeleportService"):Teleport(game.PlaceId, player)
 end)
 
-MiscTab:CreateButton("Copy Discord (if any)", function()
+MiscTab:CreateButton("Copy Discord", function()
     setclipboard("VantaXock#0000")
     Library:Notify("Copied", "Discord copied!", 2)
 end)
