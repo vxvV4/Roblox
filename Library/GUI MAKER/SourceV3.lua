@@ -10,7 +10,8 @@ G.Name = "ThemedGUI"
 local M = Instance.new("Frame", G)
 M.Name = "Frame"
 M.Size = UDim2.new(0, 200, 0, 30)
-M.Position = UDim2.new(0, 10, 0.5, -15)
+M.Position = UDim2.new(0.5, -100, 0.5, -15) -- CENTERED NA TO!
+M.AnchorPoint = Vector2.new(0.5, 0.5) -- MAY ANCHOR POINT NA PARA EXACT CENTER
 M.BackgroundColor3 = ThemeZ.CurrentTheme.MainBackground
 M.BorderSizePixel = 0
 M.Active = true
@@ -54,6 +55,7 @@ C.BorderSizePixel = 0
 
 local L = Instance.new("UIListLayout", C)
 L.Padding = UDim.new(0, 3)
+L.HorizontalAlignment = Enum.HorizontalAlignment.Center -- NAKA-CENTER NA LAHAT NG ELEMENTS!
 
 local P = Instance.new("UIPadding", C)
 P.PaddingTop = UDim.new(0, 3)
@@ -158,6 +160,7 @@ function Par(txt)
     l.Font = Enum.Font.Gotham
     l.TextWrapped = true
     l.AutomaticSize = Enum.AutomaticSize.Y
+    l.TextXAlignment = Enum.TextXAlignment.Center -- CENTERED TEXT
 end
 
 -- Textbox
