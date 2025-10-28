@@ -1,3 +1,13 @@
+-- // Notification maker \\ --
+local CoreGui = game:GetService("StarterGui")
+
+CoreGui:SetCore("SendNotification", {
+    Title = "Script Made By",
+    Text = "Shizoscript",
+    Icon = "rbxassetid://298192313",
+    Duration = 2,
+})
+-- // Gui Maker \\ --
 local ScreenGui = Instance.new("ScreenGui")
 local MainFrame = Instance.new("Frame")
 local TopBar = Instance.new("Frame")
@@ -210,6 +220,12 @@ local function CreateToggle(text, default, callback)
     return ToggleFrame
 end
 
+
+-- == Feature Maker == --
+-- == I'm not pro coder :) == --
+
+
+
 local autoFarmRunning = false 
 
 CreateToggle("Auto Slap", false, function(state)
@@ -236,7 +252,6 @@ CreateToggle("Auto Slap", false, function(state)
     end
 end)
 
-
 CreateButton("Get Coins", function()
   
   for i = 1, 99999999999999999 do
@@ -251,7 +266,7 @@ end)
 
 
 
-CreateButton("Kill ALL ( you need buy Rocket first )", function()
+CreateButton("Kill ALL ( Rocket )", function()
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     
@@ -280,4 +295,68 @@ CreateButton("Buy Secret ( Rocket )", function()
 	"RocketLauncher"
 }
 game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("UI"):InvokeServer(unpack(args))
+end)
+
+CreateButton("Buy Taser", function()
+    local args = {
+	"Gears",
+	"Taser"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("UI"):InvokeServer(unpack(args))
+
+end)
+
+CreateButton("Buy Invisible Cloak", function()
+    local args = {
+	"Gears",
+	"InvisibilityCloak"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("UI"):InvokeServer(unpack(args))
+
+end)
+
+CreateButton("Buy Invisible Cloak", function()
+    local args = {
+	"Gears",
+	"InvisibilityCloak"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("UI"):InvokeServer(unpack(args))
+
+end)
+
+
+CreateButton("Buy Gravity Coil", function()
+    local args = {
+	"Gears",
+	"GravityCoil"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("UI"):InvokeServer(unpack(args))
+
+end)
+
+CreateButton("Buy Speed Coil", function()
+    local args = {
+	"Gears",
+	"SpeedCoin"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("UI"):InvokeServer(unpack(args))
+
+end)
+
+CreateButton("Buy LaserPistol", function()
+    local args = {
+	"Gears",
+	"LaserPistol"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("UI"):InvokeServer(unpack(args))
+
+end)
+
+CreateButton("Buy Slap Hand", function()
+    local args = {
+	"Gears",
+	"SlapHand"
+}
+game:GetService("ReplicatedStorage"):WaitForChild("Event"):WaitForChild("UI"):InvokeServer(unpack(args))
+
 end)
